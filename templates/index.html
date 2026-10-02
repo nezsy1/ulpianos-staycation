@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reserve Your Stay - Ulpiano's Staycation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="ui.js"></script>
+    <script src="shared.js"></script>
+    <style>
+        :root { --bg: #f8fafc; --card: #ffffff; --primary: #1e2a47; --dark: #0f172a; --muted: #64748b; --border: #e2e8f0; --input-bg: #fafafa; }
+        body.dark-mode { --bg: #0f172a; --card: #1e293b; --primary: #c9a96e; --dark: #f8fafc; --muted: #94a3b8; --border: #334155; --input-bg: #090d16; }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
+        body { background: var(--bg); color: var(--dark); display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 30px 15px; transition: background 0.3s, color 0.3s; }
+
+        .card { background: var(--card); width: 100%; max-width: 480px; padding: 32px; border-radius: 20px; border: 1px solid var(--border); box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .back-link { text-decoration: none; color: var(--primary); font-weight: 600; font-size: 13px; display: inline-block; margin-bottom: 16px; }
+
+        h2 { font-family: 'Playfair Display', serif; font-size: 24px; font-weight: 600; letter-spacing: 0.3px; margin-bottom: 6px; color: var(--dark); }
+        p { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+
+        .form-group { margin-bottom: 14px; }
+        .form-row { display: flex; gap: 10px; }
+        .form-row .form-group { flex: 1; }
+
+        label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: var(--dark); }
+        input, select { width: 100%; padding: 10px 12px; font-size: 13.5px; border: 1.5px solid var(--border); border-radius: 10px; outline: none; background: var(--input-bg); color: var(--dark); }
+
+        .summary { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin: 18px 0; font-size: 13px; }
+        .summary .row { display: flex; justify-content: space-between; color: var(--dark); }
+        .summary .row.fee { font-weight: 700; color: var(--primary); font-size: 15px; }
+        .summary small { display: block; color: var(--muted); margin-top: 8px; font-size: 11px; }
+
+        .btn-submit { background-color: var(--primary); color: white; border: none; border-radius: 12px; padding: 14px 20px; font-size: 15px; font-weight: 600; letter-spacing: 0.5px; width: 100%; cursor: pointer; box-shadow: 0 4px 12px rgba(30, 42, 71, 0.3); transition: background-color 0.2s; }
+        body.dark-mode .btn-submit { color: #0f172a; box-shadow: 0 4px 12px rgba(201, 169, 110, 0.25); }
+        .btn-submit:disabled { opacity: .7; cursor: wait; }
+        .alert-box { display: none; margin-top: 18px; padding: 14px; border-radius: 10px; background: #fef2f2; border: 1px solid #fecaca; color: #991b1b; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <a href="home.html" class="back-link">← Back to Homepage</a>
+    <h2>Reserve Your Stay</h2>
+    <p>Please fill out your verification details and upload the required IDs.</p>
+
+    <div class="form-group">
+        <label>Full Name</label>
+        <input type="text" id="fullName" placeholder="e.g. Maria Santos" readonly style="cursor: not-allowed;">
+        <p style="margin: 4px 0 0; font-size: 11px;">Name from your account. It must match the name on your valid ID.</p>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="email" placeholder="maria@gmail.com" readonly style="cursor: not-allowed;">
+        </div>
+        <div class="form-group">
+            <label>Contact Number</label>
+            <input type="tel" id="contact" placeholder="09123456789">
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Number of Guests (Pax)</label>
+        <select id="pax" onchange="updateSummary()" required>
+            <option value="" disabled selected>Select number of guests</option>
+            <option value="1">1 Pax</option>
+            <option value="2">2 Pax</option>
+            <option value="3">3 Pax (+₱500)</option>
+            <option value="4">4 Pax (+₱1,000)</option>
+        </select>
+    </div>
+
+    <div class="form-row">
+        <div class="form-group">
+            <label>Check-in Date</label>
+            <input type="text" id="checkIn" readonly style="cursor: not-allowed;" required>
+        </div>
+        <div class="form-group">
+            <label>Check-out Date</label>
+            <input type="text" id="checkOut" readonly style="cursor: not-allowed;" required>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label>Upload Valid Government ID</label>
+        <input type="file" id="governmentId" accept="image/jpeg, image/png, image/jpg" required>
+    </div>
+
+    <div class="form-group">
+        <label>Upload Selfie Holding Valid ID</label>
+        <input type="file" id="selfieId" accept="image/jpeg, image/png, image/jpg" capture="environment" required>
+    </div>
+
+    <div class="form-group" style="margin-top: 15px;">
+        <label>Upload Payment Screenshot (GCash / Bank Receipt)</label>
+        <input type="file" id="paymentScreenshot" accept="image/jpeg, image/png, image/jpg" required>
+    </div>
+
+    <div class="form-group" style="margin-top: 15px;">
+        <label>Payment Method</label>
+        <select id="paymentMethod" onchange="togglePaymentDetails()" required>
+            <option value="" disabled selected>Select payment method</option>
+            <option value="GCash">GCash</option>
+            <option value="Bank">Bank Transfer</option>
+        </select>
+    </div>
+
+    <div id="paymentDetailsContainer" style="display: none; margin: 15px 0; padding: 15px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px;">
+        <p id="paymentTitle" style="font-weight: 700; margin-bottom: 8px; color: var(--primary);"></p>
+        <p style="margin: 4px 0; color: var(--dark);"><b>Account Name:</b> <span id="accName"></span></p>
+        <p style="margin: 4px 0; color: var(--dark);"><b>Account Number:</b> <span id="accNumber" style="font-family: monospace; font-size: 14px;"></span></p>
+        <p style="font-size: 11px; color: var(--muted); margin-top: 8px;">Please send your <span class="dynamic-fee-text">₱1,000.00</span> reservation fee to this account before submitting your reservation.</p>
+    </div>
+
+    <div class="summary">
+        <div class="row fee"><span>Reservation Fee</span><span class="dynamic-fee-text">₱1,000.00</span></div>
+        <small>₱2,500 per 22-hour stay (good for 2 pax, ₱500 per extra head, max 4). Reservation fee is ₱1,000 per day and is deducted from the total payment.</small>
+    </div>
+
+    <div style="display: flex; align-items: flex-start; gap: 8px; margin-bottom: 20px; font-size: 13px; text-align: left;">
+        <input type="checkbox" id="privacyConsent" required style="margin-top: 3px; width: auto;">
+        <label for="privacyConsent">
+            I agree to the collection and processing of my personal and identification data for this staycation booking, in compliance with the <b>Data Privacy Act (RA 10173)</b>.
+        </label>
+    </div>
+
+    <button type="button" class="btn-submit" id="submitBtn">Submit Reservation</button>
+
+    <div id="statusBox" class="alert-box"></div>
+</div>
+
+<script>
+let CI = '', CO = '';
+
+window.addEventListener('DOMContentLoaded', async () => {
+    if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-mode');
+
+    // Must be signed in
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('currentUser')); } catch (e) {}
+    if (!user || !user.isLoggedIn) {
+        await UI.alert("Please sign in first to reserve.", { title: 'Sign In Required' });
+        window.location.href = "login.html";
+        return;
+    }
+    document.getElementById('fullName').value = user.name || '';
+    document.getElementById('email').value = user.email || '';
+
+    // Dates picked on the homepage
+    const q = new URLSearchParams(location.search);
+    CI = q.get('checkIn') || localStorage.getItem('selectedCheckIn') || '';
+    CO = q.get('checkOut') || localStorage.getItem('selectedCheckOut') || '';
+    document.getElementById('checkIn').value = CI;
+    document.getElementById('checkOut').value = CO;
+
+    await UDB.sync();
+    if (!CI || !CO || !UDB.rangeFree(CI, CO)) {
+        await UI.alert("Please choose available dates on the homepage first.", { title: 'Dates Unavailable' });
+        window.location.href = "home.html";
+        return;
+    }
+    updateSummary();
+});
+
+function updateSummary() {
+    if (!CI || !CO) return;
+    const pax = parseInt(document.getElementById('pax').value) || 2;
+    const p = UDB.price(UDB.nights(CI, CO), pax);
+    document.querySelectorAll('.dynamic-fee-text').forEach(el => el.innerText = UDB.peso(p.fee) + '.00');
+}
+
+function togglePaymentDetails() {
+    const method = document.getElementById('paymentMethod').value;
+    const container = document.getElementById('paymentDetailsContainer');
+    container.style.display = 'block';
+
+    if (method === 'GCash') {
+        document.getElementById('paymentTitle').innerText = "GCash Payment Details";
+        document.getElementById('accName').innerText = "Ulpiano's Staycation (Juan U.)";
+        document.getElementById('accNumber').innerText = "0912-345-6789";
+    } else if (method === 'Bank') {
+        document.getElementById('paymentTitle').innerText = "Bank Transfer Details (BPI)";
+        document.getElementById('accName').innerText = "Ulpiano's Staycation Inc.";
+        document.getElementById('accNumber').innerText = "1234-5678-90 (BPI Savings)";
+    } else {
+        container.style.display = 'none';
+    }
+}
+
+async function handleFormSubmit() {
+    const name = document.getElementById('fullName').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const contact = document.getElementById('contact').value.trim();
+    const pax = parseInt(document.getElementById('pax').value);
+    const method = document.getElementById('paymentMethod').value;
+    const govIdFile = document.getElementById('governmentId').files[0];
+    const selfieFile = document.getElementById('selfieId').files[0];
+    const paymentSsFile = document.getElementById('paymentScreenshot').files[0];
+
+    if (!name || !email || !contact || !pax || !method) { await UI.alert("Please complete all text and select fields.", { title: 'Incomplete Details' }); return; }
+    if (!/^[^@\s]+@[^@\s]+\.[a-zA-Z]{2,}$/.test(email)) { await UI.alert("Please enter a valid email address. Your lobby pass will be sent there.", { title: 'Invalid Email' }); return; }
+    if (!govIdFile || !selfieFile || !paymentSsFile) { await UI.alert("Please upload all required files (ID, Selfie, and Payment Screenshot).", { title: 'Missing Uploads' }); return; }
+    if (!document.getElementById('privacyConsent').checked) { await UI.alert("You must agree to the Data Privacy Act.", { title: 'Consent Required' }); return; }
+
+    await UDB.sync();
+    // Someone else may have booked these dates meanwhile
+    if (!UDB.rangeFree(CI, CO)) {
+        await UI.alert("Sorry, those dates were just taken. Please choose other dates.", { title: 'Dates Unavailable' });
+        window.location.href = "home.html";
+        return;
+    }
+    const ok = await UI.confirm("Are you sure you want to submit this reservation?", { title: 'Submit Reservation', okText: 'Submit' });
+    if (!ok) return;
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerText = "Submitting reservation...";
+
+    try {
+        const [idImage, selfieImage, paymentImage] = await Promise.all([
+            UDB.compress(govIdFile), UDB.compress(selfieFile), UDB.compress(paymentSsFile)
+        ]);
+
+        const b = await UDB.createBooking({ name, email, contact, pax, checkIn: CI, checkOut: CO, paymentMethod: method, idImage, selfieImage, paymentImage });
+        const ref = b.bookingRef;
+
+        localStorage.removeItem('selectedCheckIn');
+        localStorage.removeItem('selectedCheckOut');
+        window.location.href = "success.html?ref=" + encodeURIComponent(ref);
+    } catch (err) {
+        console.error(err);
+        btn.disabled = false;
+        btn.innerText = "Submit Reservation";
+        const box = document.getElementById('statusBox');
+        box.style.display = 'block';
+        box.innerText = (err && err.message) || "Could not save your reservation (the photos may be too large). Please try smaller images and submit again.";
+    }
+}
+document.getElementById('submitBtn').addEventListener('click', handleFormSubmit);
+</script>
+
+</body>
+</html>

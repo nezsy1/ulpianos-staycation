@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservation Successful - Ulpiano's Staycation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --card: rgba(255,255,255,0.96); --dark: #0f172a; --muted: #64748b; --border: #ece4d3; --soft: #faf7f0; }
+        body.dark-mode { --card: #1c1d21; --dark: #f1f3f4; --muted: #9aa0a6; --border: #30323a; --soft: #26272c; background-color: #121316; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
+        body {
+            background: url('alpina-heights.jpg') center/cover no-repeat fixed; background-color: #d9e2ec;
+            color: var(--dark); min-height: 100vh; padding: 24px 15px;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        }
+        body.dark-mode { background-image: none; }
+
+        .brand { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 600; letter-spacing: 3px; text-transform: uppercase; color: #ffffff; text-shadow: 0 2px 10px rgba(0,0,0,0.8); margin-bottom: 18px; }
+
+        .card { width: 100%; max-width: 460px; background: var(--card); border: 1px solid var(--border); border-radius: 22px; overflow: hidden; text-align: center; box-shadow: 0 30px 70px rgba(15,23,42,0.4); animation: pop 0.35s ease; }
+        @keyframes pop { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+
+        .card-top { padding: 30px 24px 24px; background: linear-gradient(135deg, #0f172a, #1e2a47); border-bottom: 2px solid #c9a96e; }
+        .check { width: 64px; height: 64px; margin: 0 auto 14px; border-radius: 50%; border: 1.5px solid #c9a96e; background: rgba(201,169,110,0.12); display: flex; align-items: center; justify-content: center; }
+        .check svg { width: 30px; height: 30px; stroke: #c9a96e; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+        .eyebrow { display: block; color: #c9a96e; font-size: 10.5px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; }
+        h2 { font-family: 'Playfair Display', serif; font-size: 25px; font-weight: 600; letter-spacing: 0.5px; color: #ffffff; margin-top: 8px; }
+        .gold-divider { width: 70px; height: 2px; margin: 14px auto 0; background: linear-gradient(90deg, transparent, #c9a96e, transparent); }
+
+        .card-body { padding: 26px 26px 8px; }
+        .ref { display: none; background: var(--soft); border: 1px solid var(--border); border-radius: 12px; padding: 12px 16px; margin-bottom: 18px; }
+        .ref small { display: block; font-size: 9.5px; letter-spacing: 2.5px; text-transform: uppercase; color: #b08d57; font-weight: 600; }
+        .ref b { display: block; margin-top: 3px; font-family: 'Playfair Display', serif; font-size: 24px; letter-spacing: 3px; color: var(--dark); }
+        .lead { font-size: 13.5px; line-height: 1.7; color: var(--muted); margin-bottom: 18px; }
+        .lead b { color: var(--dark); }
+
+        .steps { list-style: none; text-align: left; margin-bottom: 8px; }
+        .steps li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 14px; margin-bottom: 8px; background: var(--soft); border: 1px solid var(--border); border-radius: 12px; font-size: 12.5px; line-height: 1.55; color: var(--dark); }
+        .steps .n { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, #1e2a47, #0f172a); border: 1px solid #c9a96e; color: #c9a96e; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+
+        .card-foot { position: relative; margin: 14px 26px 0; padding: 22px 0 26px; border-top: 1px solid var(--border); }
+        .card-foot::before { content: ''; position: absolute; top: -1px; left: 50%; transform: translateX(-50%); width: 56px; height: 1px; background: #c9a96e; }
+        .btn { display: block; width: 100%; padding: 14px 16px; border-radius: 10px; text-decoration: none; text-align: center; font-size: 11.5px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; background: linear-gradient(135deg, #1e2a47, #0f172a); color: #ffffff; border: 1px solid #c9a96e; transition: 0.25s; }
+        .btn:hover { background: #c9a96e; color: #0f172a; }
+    </style>
+</head>
+<body>
+
+    <div class="brand">Ulpiano's Staycation</div>
+
+    <div class="card">
+        <div class="card-top">
+            <div class="check"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>
+            <span class="eyebrow">The Alpina Heights &bull; Parañaque City</span>
+            <h2>Reservation Submitted</h2>
+            <div class="gold-divider"></div>
+        </div>
+
+        <div class="card-body">
+            <div class="ref" id="refBox"><small>Booking reference</small><b id="refText"></b></div>
+            <p class="lead">Your booking request and payment details have been sent. Please <b>wait for the confirmation email</b> regarding your stay.</p>
+            <ul class="steps">
+                <li><span class="n">1</span><span>We review your payment and valid ID.</span></li>
+                <li><span class="n">2</span><span>You receive a confirmation email with your lobby pass and terms.</span></li>
+                <li><span class="n">3</span><span>On arrival, bring a government ID and arrive 30 minutes before your booked time.</span></li>
+            </ul>
+        </div>
+
+        <div class="card-foot">
+            <a href="home.html" class="btn">Back to Homepage</a>
+        </div>
+    </div>
+
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+    document.body.classList.toggle('dark-mode', localStorage.getItem('theme') === 'dark');
+    const ref = new URLSearchParams(location.search).get('ref');
+    if (ref) { document.getElementById('refText').innerText = ref; document.getElementById('refBox').style.display = 'block'; }
+});
+</script>
+</body>
+</html>

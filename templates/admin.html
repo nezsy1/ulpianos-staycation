@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pro Admin Dashboard - Ulpiano's Staycation</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+                    colors: { brand: { 50: '#fdf8f6', 100: '#f2e8e5', 500: '#c27803', 600: '#a16207', 700: '#854d0e' } }
+                }
+            }
+        }
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css' rel='stylesheet' />
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        .dark .fc {
+            --fc-page-bg-color: #111827;
+            --fc-neutral-bg-color: #1f2937;
+            --fc-border-color: #374151;
+            --fc-list-event-hover-bg-color: #1f2937;
+            --fc-today-bg-color: rgba(217, 119, 6, 0.15);
+        }
+        .dark .fc .fc-col-header-cell-cushion,
+        .dark .fc .fc-daygrid-day-number,
+        .dark .fc .fc-toolbar-title { color: #f3f4f6; }
+        .dark .fc .fc-button { background-color: #374151; border-color: #4b5563; color: #f3f4f6; }
+        .dark .fc .fc-button:hover { background-color: #4b5563; }
+
+        .fc .fc-daygrid-day.cal-available{background:#dcfce7}
+        .fc .fc-daygrid-day.cal-reserved{background:#dbeafe}
+        .fc .fc-daygrid-day.cal-cancelled{background:#fee2e2}
+        .fc .fc-daygrid-day.cal-completed{background:#fef9c3}
+        .fc .fc-daygrid-day.cal-pending{background:#ffedd5}
+        .dark .fc .fc-daygrid-day.cal-available{background:rgba(34,197,94,.18)}
+        .dark .fc .fc-daygrid-day.cal-reserved{background:rgba(59,130,246,.22)}
+        .dark .fc .fc-daygrid-day.cal-cancelled{background:rgba(239,68,68,.22)}
+        .dark .fc .fc-daygrid-day.cal-completed{background:rgba(234,179,8,.22)}
+        .dark .fc .fc-daygrid-day.cal-pending{background:rgba(249,115,22,.22)}
+                .fc .fc-toolbar-title{font-size:1.05rem;font-weight:600}
+        .fc .fc-button{padding:.3em .65em;font-size:.78rem}
+        .fc .fc-daygrid-day-number{font-size:.75rem}
+        .fc .fc-daygrid-event{font-size:.7rem}
+        .fc .fc-day-today .fc-daygrid-day-number{background:#d97706;color:#fff;border-radius:9999px;padding:0 .4rem;margin:2px}
+        .fc .ev-pending{--fc-event-bg-color:#fed7aa;--fc-event-border-color:#fdba74;--fc-event-text-color:#7c2d12}
+        .fc .ev-reserved{--fc-event-bg-color:#bfdbfe;--fc-event-border-color:#93c5fd;--fc-event-text-color:#1e3a8a}
+        .fc .ev-completed{--fc-event-bg-color:#fde68a;--fc-event-border-color:#fcd34d;--fc-event-text-color:#78350f}
+        .fc .ev-cancelled{--fc-event-bg-color:#fecaca;--fc-event-border-color:#fca5a5;--fc-event-text-color:#7f1d1d}
+        .dark .fc .fc-daygrid-day.cal-available{background:rgba(74,222,128,.06)}
+        .dark .fc .fc-daygrid-day.cal-reserved{background:rgba(96,165,250,.14)}
+        .dark .fc .fc-daygrid-day.cal-completed{background:rgba(250,204,21,.12)}
+        .dark .fc .fc-daygrid-day.cal-cancelled{background:rgba(248,113,113,.12)}
+        .dark .fc .fc-daygrid-day.cal-pending{background:rgba(251,146,60,.12)}
+        .dark .fc .ev-pending{--fc-event-bg-color:rgba(251,146,60,.28);--fc-event-border-color:rgba(251,146,60,.5);--fc-event-text-color:#fed7aa}
+        .dark .fc .ev-reserved{--fc-event-bg-color:rgba(96,165,250,.28);--fc-event-border-color:rgba(96,165,250,.5);--fc-event-text-color:#bfdbfe}
+        .dark .fc .ev-completed{--fc-event-bg-color:rgba(250,204,21,.24);--fc-event-border-color:rgba(250,204,21,.45);--fc-event-text-color:#fde68a}
+        .dark .fc .ev-cancelled{--fc-event-bg-color:rgba(248,113,113,.24);--fc-event-border-color:rgba(248,113,113,.45);--fc-event-text-color:#fecaca}
+        @media print {
+            @page { margin: 12mm; }
+            aside, main > header { display: none !important; }
+            main { overflow: visible !important; }
+            .min-h-screen { min-height: 0 !important; }
+            tr { break-inside: avoid; }
+            body > .fixed { display: none !important; }
+            #earnings-tab > *:not(#payment-details) { display: none !important; }
+            #payment-details > *:not(#print-report) { display: none !important; }
+            #payment-details { border: 0 !important; box-shadow: none !important; padding: 0 !important; }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-950 font-sans text-gray-900 dark:text-gray-100 antialiased transition-colors duration-200" x-data="adminDashboard()">
+
+    <!-- LOGIN SCREEN -->
+    <div x-show="!isLoggedIn" class="fixed inset-0 z-50 flex items-center justify-center bg-gray-900 bg-opacity-60 backdrop-blur-sm">
+        <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md p-8 border border-gray-100 dark:border-gray-800 m-4">
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 mb-4 shadow-inner">
+                    <i class="fa-solid fa-hotel text-2xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Ulpiano's Admin</h1>
+                <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">Sign in to manage your staycation property</p>
+            </div>
+
+            <form @submit.prevent="handleLogin" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Username or Email</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400"><i class="fa-solid fa-user"></i></span>
+                        <input type="text" x-model="loginForm.username" required class="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white dark:focus:bg-gray-900 text-gray-900 dark:text-white transition-all" placeholder="admin">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Password</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400"><i class="fa-solid fa-lock"></i></span>
+                        <input type="password" x-model="loginForm.password" required class="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:bg-white dark:focus:bg-gray-900 text-gray-900 dark:text-white transition-all" placeholder="••••••••">
+                    </div>
+                </div>
+
+                <div x-show="loginError" class="p-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-xs rounded-xl flex items-center gap-2">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span x-text="loginError"></span>
+                </div>
+
+                <button type="submit" class="w-full py-3.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-xl shadow-lg shadow-amber-600/20 transition-all text-sm">Sign In</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD CONTAINER -->
+    <div x-show="isLoggedIn" class="min-h-screen flex flex-col md:flex-row" style="display: none;">
+
+        <!-- SIDEBAR -->
+        <aside class="w-full md:w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col justify-between z-30 transition-all">
+            <div>
+                <div class="h-20 flex items-center px-6 border-b border-gray-100 dark:border-gray-800 gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-amber-600 text-white flex items-center justify-center font-bold shadow-md shadow-amber-600/20">
+                        <i class="fa-solid fa-hotel"></i>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-gray-900 dark:text-white text-sm leading-tight">Ulpiano's Staycation</h2>
+                        <span class="text-xs text-amber-600 dark:text-amber-500 font-medium">Admin Portal</span>
+                    </div>
+                </div>
+
+                <nav class="p-4 space-y-1">
+                    <button @click="currentTab = 'dashboard'" :class="currentTab === 'dashboard' ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all">
+                        <i class="fa-solid fa-chart-pie w-5 text-center"></i><span>Dashboard</span>
+                    </button>
+                    <button @click="currentTab = 'calendar'; $nextTick(() => { if(calendar) calendar.updateSize(); })" :class="currentTab === 'calendar' ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all">
+                        <i class="fa-solid fa-calendar-days w-5 text-center"></i><span>Calendar & Booking</span>
+                    </button>
+                    <button @click="currentTab = 'reservations'" :class="currentTab === 'reservations' ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all">
+                        <i class="fa-solid fa-list-check w-5 text-center"></i><span>Guest Lists</span>
+                    </button>
+                    <button @click="currentTab = 'earnings'" :class="currentTab === 'earnings' ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all">
+                        <i class="fa-solid fa-peso-sign w-5 text-center"></i><span>Earnings</span>
+                    </button>
+                    <button @click="currentTab = 'messages'" :class="currentTab === 'messages' ? 'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 font-semibold' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-gray-900 dark:hover:text-white'" class="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all relative">
+                        <i class="fa-solid fa-comments w-5 text-center"></i><span>Live Chat</span>
+                        <span x-show="unreadTotal > 0" x-text="unreadTotal" class="ml-auto bg-amber-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full"></span>
+                    </button>
+                </nav>
+            </div>
+
+            <div class="p-4 border-t border-gray-100 dark:border-gray-800 space-y-2">
+                <button @click="logout" class="w-full flex items-center gap-3 px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl text-sm font-medium transition-all">
+                    <i class="fa-solid fa-arrow-right-from-bracket w-5 text-center"></i><span>Log Out</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 flex flex-col min-w-0 overflow-y-auto">
+
+            <header class="h-20 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-6 sm:px-8 flex items-center justify-between sticky top-0 z-20 transition-colors">
+                <div class="flex items-center gap-4">
+                    <h1 class="text-xl font-bold text-gray-900 dark:text-white capitalize" x-text="currentTab"></h1>
+                </div>
+
+                <div class="flex items-center gap-4">
+                    <button @click="darkMode = !darkMode" class="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all" title="Toggle Dark Mode">
+                        <i class="fa-solid" :class="darkMode ? 'fa-sun text-amber-400' : 'fa-moon text-gray-600'"></i>
+                    </button>
+
+                    <!-- NOTIFICATIONS (clickable, Facebook-style) -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="w-10 h-10 rounded-xl bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 relative transition-all">
+                            <i class="fa-regular fa-bell"></i>
+                            <span x-show="unreadNotifs > 0" x-text="unreadNotifs" class="absolute -top-1 -right-1 min-w-[16px] h-4 px-1 bg-red-600 text-white text-[9px] font-bold rounded-full flex items-center justify-center"></span>
+                        </button>
+                        <div x-show="open" @click.away="open = false" class="absolute right-0 mt-3 w-96 max-w-[90vw] bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-2 z-50">
+                            <div class="flex justify-between items-center px-3 pt-2 pb-2 mb-1 border-b border-gray-100 dark:border-gray-800">
+                                <h3 class="font-bold text-sm text-gray-900 dark:text-white">Notifications</h3>
+                                <button @click="markAllRead()" :disabled="unreadNotifs === 0" class="text-xs text-amber-600 dark:text-amber-500 font-semibold hover:underline disabled:opacity-40 disabled:no-underline disabled:cursor-default">Mark all read</button>
+                            </div>
+                            <div class="max-h-96 overflow-y-auto">
+                                <template x-for="n in notifications" :key="n.id">
+                                    <button @click="openNotif(n); open = false" :class="n.read ? '' : 'bg-amber-50/70 dark:bg-amber-900/20'" class="w-full text-left flex gap-3 p-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
+                                        <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" :class="n.kind === 'chat' ? 'bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400' : 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400'"><i class="fa-solid" :class="n.kind === 'chat' ? 'fa-message' : 'fa-calendar-check'"></i></div>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-xs text-gray-800 dark:text-gray-200" :class="n.read ? 'font-medium' : 'font-bold'" x-text="n.text"></p>
+                                            <p class="text-[11px] text-gray-500 dark:text-gray-400 truncate" x-text="n.sub"></p>
+                                            <span class="text-[10px] font-semibold" :class="n.read ? 'text-gray-400' : 'text-amber-600 dark:text-amber-400'" x-text="ago(n.ts)"></span>
+                                        </div>
+                                        <span x-show="!n.read" class="w-2.5 h-2.5 rounded-full bg-amber-600 mt-2 shrink-0"></span>
+                                    </button>
+                                </template>
+                                <p x-show="notifications.length === 0" class="p-6 text-center text-xs text-gray-400">No notifications.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center gap-3 pl-4 border-l border-gray-200 dark:border-gray-800">
+                        <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-sm">AD</div>
+                        <div class="hidden sm:block">
+                            <p class="text-xs font-bold text-gray-900 dark:text-white">Super Admin</p>
+                            <p class="text-[10px] text-gray-500 dark:text-gray-400">ulpiano@admin.com</p>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- TAB 1: DASHBOARD -->
+            <div x-show="currentTab === 'dashboard'" class="p-6 sm:p-8 space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div @click="openList('All')" @keydown.enter="openList('All')" role="button" tabindex="0" class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-sm flex items-center gap-4 cursor-pointer hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-md hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <div class="w-14 h-14 rounded-2xl bg-amber-50 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-calendar-check"></i></div>
+                        <div>
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Bookings</p>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1" x-text="count('All')">48</h3>
+                            <span class="text-xs text-green-600 dark:text-green-400 font-medium flex items-center gap-1 mt-1"><i class="fa-solid fa-arrow-up"></i> +12% this month</span>
+                        </div>
+                    </div>
+
+                    <div @click="openList('Pending')" @keydown.enter="openList('Pending')" role="button" tabindex="0" class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-sm flex items-center gap-4 cursor-pointer hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-md hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <div class="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-clock"></i></div>
+                        <div>
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Pending Requests</p>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1" x-text="count('Pending')">5</h3>
+                            <span class="text-xs text-amber-600 dark:text-amber-400 font-medium flex items-center gap-1 mt-1">Awaiting action</span>
+                        </div>
+                    </div>
+
+                    <div @click="currentTab = 'earnings'" @keydown.enter="currentTab = 'earnings'" role="button" tabindex="0" class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-sm flex items-center gap-4 cursor-pointer hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-md hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <div class="w-14 h-14 rounded-2xl bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400 flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-peso-sign"></i></div>
+                        <div>
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Est. Revenue (Month)</p>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1" x-text="peso(thisMonthIncome)">₱45,800</h3>
+                            <span class="text-xs text-green-600 dark:text-green-400 font-medium flex items-center gap-1 mt-1">This month · view earnings</span>
+                        </div>
+                    </div>
+
+                    </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                    <div @click="openList('Reserved')" @keydown.enter="openList('Reserved')" role="button" tabindex="0" class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-sm flex items-center gap-4 cursor-pointer hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-md hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <div class="w-14 h-14 rounded-2xl bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-bookmark"></i></div>
+                        <div>
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Reserved</p>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1" x-text="count('Reserved')">12</h3>
+                            <span class="text-xs text-sky-600 dark:text-sky-400 font-medium mt-1 block">Upcoming stays</span>
+                        </div>
+                    </div>
+
+                    <div @click="openList('Cancelled')" @keydown.enter="openList('Cancelled')" role="button" tabindex="0" class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-sm flex items-center gap-4 cursor-pointer hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-md hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <div class="w-14 h-14 rounded-2xl bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-ban"></i></div>
+                        <div>
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Cancelled</p>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1" x-text="count('Cancelled')">3</h3>
+                            <span class="text-xs text-red-600 dark:text-red-400 font-medium mt-1 block">This month</span>
+                        </div>
+                    </div>
+
+                    <div @click="openList('Completed')" @keydown.enter="openList('Completed')" role="button" tabindex="0" class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-sm flex items-center gap-4 cursor-pointer hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-md hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <div class="w-14 h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-xl font-bold"><i class="fa-solid fa-circle-check"></i></div>
+                        <div>
+                            <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Completed</p>
+                            <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1" x-text="count('Completed')">28</h3>
+                            <span class="text-xs text-emerald-600 dark:text-emerald-400 font-medium mt-1 block">Finished stays</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-sm">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="font-bold text-gray-900 dark:text-white text-base">Recent Reservations</h3>
+                            <button @click="openList('All')" class="text-xs font-semibold text-amber-600 dark:text-amber-500 hover:text-amber-700">View All</button>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-left text-sm">
+                                <thead class="bg-gray-50 dark:bg-gray-800 text-gray-400 uppercase text-[10px] tracking-wider">
+                                    <tr>
+                                        <th class="p-3 rounded-l-xl">Guest</th>
+                                        <th class="p-3">Dates</th>
+                                        <th class="p-3">Booked</th>
+                                        <th class="p-3">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
+                                    <template x-for="r in recentBookings" :key="r.id">
+                                        <tr @click="openDetails(r)" class="cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800/50">
+                                            <td class="p-3 font-medium text-gray-900 dark:text-white" x-text="r.name"></td>
+                                            <td class="p-3 text-gray-500 dark:text-gray-400" x-text="r.dates"></td>
+                                            <td class="p-3 text-gray-500 dark:text-gray-400" x-text="shortDate(parseDate(r.bookedAt))"></td>
+                                            <td class="p-3"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold" :class="statusClass(r.status)" x-text="r.status"></span></td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold text-gray-900 dark:text-white text-base mb-2">Quick Actions</h3>
+                        </div>
+                        <div class="space-y-3">
+                            <button @click="currentTab = 'calendar'; $nextTick(() => { if(calendar) calendar.updateSize(); })" class="w-full py-3 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-xl text-xs shadow-md shadow-amber-600/20 transition-all flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-calendar-plus"></i> Open Calendar
+                            </button>
+                            <button @click="currentTab = 'messages'" class="w-full py-3 bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 font-semibold rounded-xl text-xs transition-all flex items-center justify-center gap-2 border border-gray-200 dark:border-gray-700">
+                                <i class="fa-solid fa-message"></i> View Messages
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 2: CALENDAR -->
+            <div x-show="currentTab === 'calendar'" class="p-6 sm:p-8 space-y-6">
+                <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-sm">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <div>
+                            <h3 class="font-bold text-gray-900 dark:text-white text-lg">Interactive Booking Calendar</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Colors follow the booking status in Guest Lists. Use Month, Week or Year view.</p>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400 font-medium"><span class="w-3 h-3 rounded-full bg-green-300 inline-block"></span> Available</span>
+                            <span class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400 font-medium"><span class="w-3 h-3 rounded-full bg-blue-300 inline-block"></span> Reserved</span>
+                            <span class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400 font-medium"><span class="w-3 h-3 rounded-full bg-yellow-300 inline-block"></span> Completed</span>
+                            <span class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400 font-medium"><span class="w-3 h-3 rounded-full bg-red-300 inline-block"></span> Cancelled</span>
+                            <span class="flex items-center gap-1.5 text-xs text-gray-600 dark:text-gray-400 font-medium"><span class="w-3 h-3 rounded-full bg-orange-300 inline-block"></span> Pending</span>
+                        </div>
+                    </div>
+                    <div id="calendar" class="max-w-4xl mx-auto text-sm text-gray-900 dark:text-gray-100"></div>
+                </div>
+            </div>
+
+            <!-- TAB 3: GUEST LISTS -->
+            <div x-show="currentTab === 'reservations'" class="p-6 sm:p-8 space-y-6">
+                <div class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-sm">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                        <div>
+                            <h3 class="font-bold text-gray-900 dark:text-white text-lg">All Guest Lists</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Total Payment is automatic (based on the number of days booked). Repeat guests are tagged and share one profile.</p>
+                        </div>
+                        <div class="flex gap-2 w-full sm:w-auto">
+                            <input type="text" x-model="search" placeholder="Search guest..." class="px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 w-full sm:w-64 text-gray-900 dark:text-white">
+                        </div>
+                    </div>
+
+                    <!-- Status filter chips -->
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <template x-for="s in statuses" :key="s">
+                            <button @click="statusFilter = s"
+                                :class="statusFilter === s ? 'bg-amber-600 text-white border-amber-600' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700'"
+                                class="px-3 py-1.5 rounded-full text-xs font-semibold border transition-all"
+                                x-text="s + ' (' + count(s) + ')'"></button>
+                        </template>
+                    </div>
+
+                    <!-- A-Z letter filter -->
+                    <div class="flex flex-wrap gap-1.5 mb-6">
+                        <button @click="letter = 'All'"
+                            :class="letter === 'All' ? 'bg-amber-600 text-white border-amber-600' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700'"
+                            class="px-3 h-8 rounded-lg text-xs font-bold border transition-all">A-Z</button>
+                        <template x-for="l in letters" :key="l">
+                            <button @click="letter = l" :disabled="guestLetterCount(l) === 0 && letter !== l"
+                                :class="letter === l
+                                    ? 'bg-amber-600 text-white border-amber-600'
+                                    : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-gray-50 dark:disabled:hover:bg-gray-800'"
+                                class="w-8 h-8 rounded-lg text-xs font-bold border transition-all" x-text="l"></button>
+                        </template>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50 dark:bg-gray-800 text-gray-400 uppercase text-[10px] tracking-wider">
+                                <tr>
+                                    <th class="p-3 rounded-l-xl">Name</th>
+                                    <th class="p-3">Contact Number</th>
+                                    <th class="p-3">Email</th>
+                                    <th class="p-3">Check-in / Out</th>
+                                    <th class="p-3">Pax</th>
+                                    <th class="p-3">Total Payment</th>
+                                    <th class="p-3">Damage Fee</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3">Remarks</th>
+                                    <th class="p-3 rounded-r-xl text-right">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
+                                <template x-for="r in filtered" :key="r.id">
+                                    <tr>
+                                        <td class="p-3 font-semibold text-gray-900 dark:text-white">
+                                            <span x-text="r.name"></span>
+                                            <span x-show="staysOf(r).length > 1" class="ml-1 px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400" x-text="'Repeat · ' + staysOf(r).length + ' stays'"></span>
+                                        </td>
+                                        <td class="p-3 text-gray-500 dark:text-gray-400" x-text="r.contact"></td>
+                                        <td class="p-3 text-gray-500 dark:text-gray-400" x-text="r.email"></td>
+                                        <td class="p-3 text-gray-500 dark:text-gray-400" x-text="r.dates"></td>
+                                        <td class="p-3 text-gray-900 dark:text-white font-semibold" x-text="r.pax"></td>
+                                        <td class="p-3">
+                                            <span class="font-semibold text-gray-900 dark:text-white block" x-text="peso(totalOf(r))"></span>
+                                            <span class="text-[10px] text-gray-400" x-text="stayLabel(r)"></span>
+                                        </td>
+                                        <td class="p-3">
+                                            <span :class="r.damageFee > 0 ? 'font-semibold text-red-600 dark:text-red-400' : 'text-gray-400'" x-text="r.damageFee > 0 ? peso(r.damageFee) : '—'"></span>
+                                            <span x-show="r.damageFee > 0 && r.damageNote" class="block text-[10px] text-gray-400 mt-0.5 max-w-[140px] truncate" :title="r.damageNote" x-text="r.damageNote"></span>
+                                            <button x-show="canEditDamage(r)" @click="openDamage(r)" class="block text-[10px] font-bold text-red-600 dark:text-red-400 hover:text-red-700" x-text="r.damageFee > 0 ? 'Edit' : '+ Add'"></button>
+                                        </td>
+                                        <td class="p-3">
+                                            <select @change="setDraft(r, 'status', $event.target.value)" :disabled="isLocked(r)"
+                                                :title="isLocked(r) ? 'Completed or cancelled bookings can no longer be edited' : ''"
+                                                :class="statusClass(getField(r, 'status'))"
+                                                class="px-2 py-1 rounded-full text-[10px] font-bold border border-transparent focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-60 disabled:cursor-not-allowed cursor-pointer">
+                                                <template x-for="s in statusOptions(r)" :key="s">
+                                                    <option :value="s" x-text="s" :selected="s === getField(r, 'status')"
+                                                        class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white"></option>
+                                                </template>
+                                            </select>
+                                            <div x-show="isDirty(r, 'status')" class="flex gap-3 mt-1.5 text-[10px] font-bold">
+                                                <button @click="saveDraft(r, 'status')" class="text-green-600 dark:text-green-400 hover:text-green-700">OK</button>
+                                                <button @click="cancelDraft(r, 'status')" class="text-red-600 dark:text-red-400 hover:text-red-700">Cancel</button>
+                                            </div>
+                                        </td>
+                                        <td class="p-3">
+                                            <input type="text" :value="getField(r, 'remarks')" :disabled="isLocked(r)"
+                                                :placeholder="isLocked(r) ? '—' : 'Add remarks...'"
+                                                :title="isLocked(r) ? 'Completed or cancelled bookings can no longer be edited' : ''"
+                                                @input="setDraft(r, 'remarks', $event.target.value)"
+                                                @keydown.enter="saveDraft(r, 'remarks')" @keydown.escape="cancelDraft(r, 'remarks')"
+                                                class="w-52 px-3 py-1.5 placeholder-gray-400 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-900 dark:text-white disabled:opacity-60 disabled:cursor-not-allowed">
+                                            <div x-show="isDirty(r, 'remarks')" class="flex gap-3 mt-1.5 text-[10px] font-bold">
+                                                <button @click="saveDraft(r, 'remarks')" class="text-green-600 dark:text-green-400 hover:text-green-700">OK</button>
+                                                <button @click="cancelDraft(r, 'remarks')" class="text-red-600 dark:text-red-400 hover:text-red-700">Cancel</button>
+                                            </div>
+                                        </td>
+                                        <td class="p-3 text-right">
+                                            <button @click="openDetails(r)" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 font-bold">Details</button>
+                                        </td>
+                                    </tr>
+                                </template>
+                                <tr x-show="filtered.length === 0">
+                                    <td colspan="10" class="p-8 text-center text-gray-400">No bookings found.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: EARNINGS -->
+            <div id="earnings-tab" x-show="currentTab === 'earnings'" class="p-6 sm:p-8 space-y-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+                    <div @click="setRange('week')" @keydown.enter="setRange('week')" role="button" tabindex="0"
+                         :class="rangeFilter === 'week' ? 'ring-2 ring-amber-500 border-amber-400' : ''"
+                         class="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-sm cursor-pointer hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-md hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">This Week</p>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1" x-text="peso(thisWeekIncome)"></h3>
+                        <span class="text-xs text-gray-400 mt-1 block">Income collected</span>
+                    </div>
+                    <div @click="setRange('month')" @keydown.enter="setRange('month')" role="button" tabindex="0"
+                         :class="rangeFilter === 'month' ? 'ring-2 ring-amber-500 border-amber-400' : ''"
+                         class="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-sm cursor-pointer hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-md hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">This Month</p>
+                        <h3 class="text-2xl font-bold text-gray-900 dark:text-white mt-1" x-text="peso(thisMonthIncome)"></h3>
+                        <span class="text-xs text-gray-400 mt-1 block">Income collected</span>
+                    </div>
+                    <div @click="setRange('all')" @keydown.enter="setRange('all')" role="button" tabindex="0"
+                         :class="rangeFilter === 'all' ? 'ring-2 ring-amber-500 border-amber-400' : ''"
+                         class="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-sm cursor-pointer hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-md hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">All-Time Income</p>
+                        <h3 class="text-2xl font-bold text-green-600 dark:text-green-400 mt-1" x-text="peso(allTimeIncome)"></h3>
+                        <span class="text-xs text-gray-400 mt-1 block">Total collected</span>
+                    </div>
+                    <div @click="setRange('year')" @keydown.enter="setRange('year')" role="button" tabindex="0"
+                         :class="rangeFilter === 'year' ? 'ring-2 ring-amber-500 border-amber-400' : ''"
+                         class="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-sm cursor-pointer hover:border-amber-400 dark:hover:border-amber-500 hover:shadow-md hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-amber-500">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Year Income</p>
+                        <h3 class="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1" x-text="peso(yearIncome)"></h3>
+                        <span class="text-xs text-gray-400 mt-1 block" x-text="'Income for ' + new Date().getFullYear()"></span>
+                    </div>
+                    <div @click="toggleDamageOnly()" @keydown.enter="toggleDamageOnly()" role="button" tabindex="0"
+                         :class="damageOnly ? 'ring-2 ring-red-500 border-red-400' : ''"
+                         class="bg-white dark:bg-gray-900 p-5 rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-sm cursor-pointer hover:border-red-400 dark:hover:border-red-500 hover:shadow-md hover:-translate-y-0.5 transition-all focus:outline-none focus:ring-2 focus:ring-red-500">
+                        <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Damage Fees</p>
+                        <h3 class="text-2xl font-bold text-red-600 dark:text-red-400 mt-1" x-text="peso(damageTotal)"></h3>
+                        <span class="text-xs text-gray-400 mt-1 block">Paid for broken / damaged items · click to view</span>
+                    </div>
+                </div>
+
+                <!-- Income breakdown -->
+                <div id="income-breakdown" class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-sm">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <div>
+                            <h3 class="font-bold text-gray-900 dark:text-white text-lg">Income Breakdown</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Reservation fees + balance payments + damage fees, counted by check-in date. Pending and cancelled bookings are not included.</p>
+                            <div x-show="rangeFilter" class="flex items-center gap-2 mt-2 text-xs">
+                                <span class="px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 font-bold" x-text="'Showing: ' + rangeLabel"></span>
+                                <button @click="rangeFilter = null" class="text-red-600 dark:text-red-400 hover:text-red-700 font-bold">Clear</button>
+                            </div>
+                        </div>
+                        <div class="inline-flex p-1 bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
+                            <template x-for="p in periods" :key="p.id">
+                                <button @click="period = p.id"
+                                    :class="period === p.id ? 'bg-amber-600 text-white shadow' : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'"
+                                    class="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all" x-text="p.label"></button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50 dark:bg-gray-800 text-gray-400 uppercase text-[10px] tracking-wider">
+                                <tr>
+                                    <th class="p-3 rounded-l-xl">Period</th>
+                                    <th class="p-3 text-right">Bookings</th>
+                                    <th class="p-3 rounded-r-xl text-right">Total Income</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
+                                <template x-for="g in groups" :key="g.key">
+                                    <tr>
+                                        <td class="p-3 font-semibold text-gray-900 dark:text-white" x-text="g.label"></td>
+                                        <td class="p-3 text-right text-gray-500 dark:text-gray-400" x-text="g.bookings"></td>
+                                        <td class="p-3 text-right min-w-[140px]">
+                                            <span class="font-bold text-green-600 dark:text-green-400" x-text="peso(g.income)"></span>
+                                            <div class="mt-1 h-1.5 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                                                <div class="h-full bg-green-500 rounded-full" :style="'width:' + (maxIncome ? Math.round(g.income / maxIncome * 100) : 0) + '%'"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </template>
+                                <tr x-show="groups.length === 0">
+                                    <td colspan="3" class="p-8 text-center text-gray-400">No income recorded yet.</td>
+                                </tr>
+                            </tbody>
+                            <tfoot x-show="groups.length > 0" class="border-t-2 border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-900 dark:text-white">
+                                <tr>
+                                    <td class="p-3">Total</td>
+                                    <td class="p-3 text-right" x-text="groupTotals.bookings"></td>
+                                    <td class="p-3 text-right text-green-600 dark:text-green-400" x-text="peso(groupTotals.income)"></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Payment details -->
+                <div id="payment-details" class="bg-white dark:bg-gray-900 p-6 rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-sm">
+                    <div class="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 print:hidden">
+                        <div>
+                            <h3 class="font-bold text-gray-900 dark:text-white text-lg">Payment Details</h3>
+                            <p class="text-xs text-gray-500 dark:text-gray-400">Total Payment already includes the reservation fee and damage fee. Damage fees are edited in Guest Lists. Print shows only the rows listed below.</p>
+                            <div x-show="damageOnly" class="flex items-center gap-2 mt-2 text-xs">
+                                <span class="px-2.5 py-1 rounded-full bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400 font-bold">Showing: Bookings with damage fees</span>
+                                <button @click="damageOnly = false" class="text-red-600 dark:text-red-400 hover:text-red-700 font-bold">Clear</button>
+                            </div>
+                        </div>
+                        <button @click="printEarnings()" class="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-semibold rounded-xl text-xs shadow-md shadow-amber-600/20 flex items-center gap-2 shrink-0"><i class="fa-solid fa-print"></i> Print Earnings</button>
+                    </div>
+
+                    <div id="print-report" class="hidden print:block text-black">
+                        <div class="text-center mb-4">
+                            <h2 class="text-lg font-bold">Ulpiano's Staycation – Earnings Report</h2>
+                            <p class="text-xs" x-text="(rangeFilter ? rangeLabel : 'All Bookings') + (damageOnly ? ' · With damage fees' : '') + (payLetter !== 'All' ? ' · Guests starting with ' + payLetter : '') + ' · Printed ' + new Date().toLocaleString('en-US')"></p>
+                        </div>
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead><tr class="border-b-2 border-black"><th class="py-2">Guest</th><th>Check-in / Out</th><th class="text-right">Total Payment</th><th class="text-right">Damage Fee</th></tr></thead>
+                            <tbody>
+                                <template x-for="r in paymentRows" :key="r.id">
+                                    <tr class="border-b border-gray-300">
+                                        <td class="py-2" x-text="r.name"></td>
+                                        <td x-text="r.dates"></td>
+                                        <td class="text-right" x-text="peso(paymentTotal(r))"></td>
+                                        <td class="text-right" x-text="r.damageFee > 0 ? peso(r.damageFee) : '—'"></td>
+                                    </tr>
+                                </template>
+                            </tbody>
+                            <tfoot><tr class="border-t-2 border-black font-bold"><td class="py-2" colspan="2">Total Income (collected, incl. damage fees)</td><td class="text-right" colspan="2" x-text="peso(printTotal)"></td></tr></tfoot>
+                        </table>
+                    </div>
+
+                    <!-- A-Z letter filter -->
+                    <div class="flex flex-wrap gap-1.5 mb-6">
+                        <button @click="payLetter = 'All'"
+                            :class="payLetter === 'All' ? 'bg-amber-600 text-white border-amber-600' : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700'"
+                            class="px-3 h-8 rounded-lg text-xs font-bold border transition-all">A-Z</button>
+                        <template x-for="l in letters" :key="l">
+                            <button @click="payLetter = l" :disabled="payLetterCount(l) === 0 && payLetter !== l"
+                                :class="payLetter === l
+                                    ? 'bg-amber-600 text-white border-amber-600'
+                                    : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-gray-50 dark:disabled:hover:bg-gray-800'"
+                                class="w-8 h-8 rounded-lg text-xs font-bold border transition-all" x-text="l"></button>
+                        </template>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead class="bg-gray-50 dark:bg-gray-800 text-gray-400 uppercase text-[10px] tracking-wider">
+                                <tr>
+                                    <th class="p-3 rounded-l-xl">Guest</th>
+                                    <th class="p-3">Check-in</th>
+                                    <th class="p-3 text-right">Total Payment</th>
+                                    <th class="p-3 text-right">Reservation Fee</th>
+                                    <th class="p-3 text-right">Damage Fee</th>
+                                    <th class="p-3 rounded-r-xl">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 dark:divide-gray-800 text-xs">
+                                <template x-for="r in paymentRows" :key="r.id">
+                                    <tr>
+                                        <td class="p-3">
+                                            <span class="font-semibold text-gray-900 dark:text-white block" x-text="r.name"></span>
+                                        </td>
+                                        <td class="p-3 text-gray-500 dark:text-gray-400" x-text="r.dates"></td>
+                                        <td class="p-3 text-right font-semibold text-gray-900 dark:text-white" x-text="peso(paymentTotal(r))"></td>
+                                        <td class="p-3 text-right text-gray-500 dark:text-gray-400" x-text="peso(feeOf(r))"></td>
+                                        <td class="p-3 text-right">
+                                            <span :class="r.damageFee > 0 ? 'font-semibold text-red-600 dark:text-red-400' : 'text-gray-400'" x-text="r.damageFee > 0 ? peso(r.damageFee) : '—'"></span>
+                                            <span x-show="r.damageFee > 0 && r.damageNote" class="block text-[10px] text-gray-400 mt-0.5 max-w-[140px] ml-auto truncate" :title="r.damageNote" x-text="r.damageNote"></span>
+                                        </td>
+                                        <td class="p-3"><span class="px-2 py-1 rounded-full text-[10px] font-bold" :class="statusClass(r.status)" x-text="r.status"></span></td>
+                                    </tr>
+                                </template>
+                                <tr x-show="paymentRows.length === 0">
+                                    <td colspan="6" class="p-8 text-center text-gray-400">No bookings found.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB 4: LIVE CHAT -->
+            <div x-show="currentTab === 'messages'" x-effect="if (currentTab === 'messages') scrollChat()" class="p-6 sm:p-8 h-[calc(100vh-5rem)]">
+                <div class="bg-white dark:bg-gray-900 rounded-2xl border border-gray-200/80 dark:border-gray-800 shadow-sm h-full flex overflow-hidden">
+                    <div class="w-80 border-r border-gray-200 dark:border-gray-800 flex flex-col">
+                        <div class="p-4 border-b border-gray-100 dark:border-gray-800">
+                            <input type="text" x-model="chatSearch" placeholder="Search chat..." class="w-full px-4 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-900 dark:text-white">
+                        </div>
+                        <div class="flex-1 overflow-y-auto divide-y divide-gray-50 dark:divide-gray-800">
+                            <template x-for="c in chatList" :key="c.id">
+                                <div @click="openChat(c)" :class="activeId === c.id ? 'bg-amber-50/80 dark:bg-amber-900/30' : ''" class="p-4 hover:bg-amber-50/50 dark:hover:bg-amber-900/20 cursor-pointer transition-all">
+                                    <div class="flex justify-between items-center mb-1">
+                                        <h4 class="font-bold text-xs text-gray-900 dark:text-white" x-text="c.name"></h4>
+                                        <span class="text-[10px] text-gray-400" x-text="listTime(lastOf(c).ts)"></span>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <p class="flex-1 text-xs truncate" :class="unreadOf(c) ? 'font-bold text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'" x-text="(lastOf(c).from === 'admin' ? 'You: ' : '') + lastOf(c).text"></p>
+                                        <span x-show="unreadOf(c) > 0" x-text="unreadOf(c)" class="bg-amber-600 text-white text-[10px] font-bold px-1.5 rounded-full"></span>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <template x-if="activeChat">
+                        <div class="flex-1 flex flex-col bg-gray-50/30 dark:bg-gray-950/40 min-w-0">
+                            <div class="p-4 bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-full bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 flex items-center justify-center font-bold text-xs" x-text="initials(activeChat.name)"></div>
+                                <div>
+                                    <h4 class="font-bold text-xs text-gray-900 dark:text-white" x-text="activeChat.name"></h4>
+                                    <span class="text-[10px] text-green-600 dark:text-green-400 font-medium" x-text="activeChat.online ? 'Online' : 'Offline'"></span>
+                                </div>
+                            </div>
+
+                            <div x-ref="chatBody" class="flex-1 p-4 overflow-y-auto space-y-3">
+                                <template x-for="(m, i) in activeChat.messages" :key="i">
+                                    <div>
+                                        <div x-show="showDate(activeChat, i)" class="text-center my-3"><span class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider" x-text="dayLabel(m.ts)"></span></div>
+                                        <div class="flex gap-3 max-w-md" :class="m.from === 'admin' ? 'ml-auto flex-row-reverse' : ''">
+                                            <div class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-[10px] shrink-0" :class="m.from === 'admin' ? 'bg-amber-600 text-white' : 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400'" x-text="m.from === 'admin' ? 'AD' : initials(activeChat.name)"></div>
+                                            <div>
+                                                <div class="p-3 rounded-2xl text-xs shadow-sm break-words" :class="m.from === 'admin' ? 'bg-amber-600 text-white rounded-tr-none' : 'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 border border-gray-100 dark:border-gray-800 rounded-tl-none'" x-text="m.text"></div>
+                                                <div class="mt-1 text-[10px] text-gray-400" :class="m.from === 'admin' ? 'text-right' : ''">
+                                                    <span x-text="timeOf(m.ts)"></span><span x-show="m.from === 'admin' && isLastAdmin(activeChat, i)" x-text="m.seen ? ' · Seen ' + timeOf(m.seenAt) : ' · Sent'"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <div class="p-4 bg-white dark:bg-gray-900 border-t border-gray-100 dark:border-gray-800 flex items-center gap-3">
+                                <input type="text" x-model="newMsg" @keydown.enter="sendMsg()" placeholder="Type a message..." class="flex-1 px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-900 dark:text-white">
+                                <button @click="sendMsg()" class="w-11 h-11 bg-amber-600 hover:bg-amber-700 text-white rounded-xl flex items-center justify-center shadow-md shadow-amber-600/20 transition-all shrink-0"><i class="fa-solid fa-paper-plane text-xs"></i></button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- CONFIRMATION MODAL -->
+    <div x-show="confirmModal.open" x-transition.opacity x-effect="if (confirmModal.open && confirmModal.needsPassword) $nextTick(() => $refs.pw && $refs.pw.focus())" @keydown.escape.window="closeConfirm()"
+         class="fixed inset-0 z-[70] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4" style="display: none;">
+        <div @click.away="closeConfirm()" class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-gray-100 dark:border-gray-800">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-11 h-11 rounded-xl flex items-center justify-center text-lg shrink-0"
+                     :class="confirmModal.danger ? 'bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400' : 'bg-green-50 dark:bg-green-900/30 text-green-600 dark:text-green-400'">
+                    <i class="fa-solid" :class="confirmModal.danger ? 'fa-triangle-exclamation' : 'fa-circle-check'"></i>
+                </div>
+                <h3 class="font-bold text-gray-900 dark:text-white text-base" x-text="confirmModal.title"></h3>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400" :class="confirmModal.needsPassword ? 'mb-4' : 'mb-6'" x-text="confirmModal.message"></p>
+            <div x-show="confirmModal.needsPassword" class="mb-6">
+                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Admin Password</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400"><i class="fa-solid fa-lock"></i></span>
+                    <input type="password" x-ref="pw" x-model="confirmModal.password" @input="confirmModal.error = ''" @keydown.enter="applyConfirm()" placeholder="Enter password"
+                        class="w-full pl-11 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-900 dark:text-white">
+                </div>
+                <p x-show="confirmModal.error" x-text="confirmModal.error" class="text-xs text-red-600 dark:text-red-400 mt-2"></p>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button @click="closeConfirm()" class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">Cancel</button>
+                <button @click="applyConfirm()" class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white shadow-md transition-all"
+                        :class="confirmModal.danger ? 'bg-red-600 hover:bg-red-700 shadow-red-600/20' : 'bg-amber-600 hover:bg-amber-700 shadow-amber-600/20'">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GUEST DETAILS MODAL -->
+    <div x-show="detailsModal.open" x-transition.opacity @keydown.escape.window="closeDetails()"
+         class="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4" style="display: none;">
+        <div @click.away="closeDetails()" class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg p-6 border border-gray-100 dark:border-gray-800 max-h-[90vh] overflow-y-auto">
+            <template x-if="detailsModal.r">
+                <div>
+                    <div class="flex items-center justify-between gap-3 mb-5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-11 h-11 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-400 flex items-center justify-center text-lg shrink-0"><i class="fa-solid fa-id-card"></i></div>
+                            <div>
+                                <h3 class="font-bold text-gray-900 dark:text-white text-base" x-text="detailsModal.r.name"></h3>
+                                <span class="inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold" :class="statusClass(detailsModal.r.status)" x-text="detailsModal.r.status"></span>
+                                <span x-show="staysOf(detailsModal.r).length > 1" class="inline-block mt-1 ml-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400" x-text="'Repeat guest · ' + staysOf(detailsModal.r).length + ' stays'"></span>
+                            </div>
+                        </div>
+                        <button @click="closeDetails()" class="w-8 h-8 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+
+                    <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Uploaded Documents</p>
+                    <div class="grid grid-cols-3 gap-3 mb-4">
+                        <template x-for="d in docsOf(detailsModal.r)" :key="d.label">
+                            <div>
+                                <a x-show="d.src" :href="d.src" target="_blank"><img :src="d.src" :alt="d.label" class="w-full h-24 object-cover rounded-xl border border-gray-200 dark:border-gray-700"></a>
+                                <div x-show="!d.src" class="h-24 rounded-xl border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center text-gray-400">
+                                    <i class="fa-regular fa-image text-xl mb-1"></i><span class="text-[9px] uppercase tracking-wider">Not uploaded</span>
+                                </div>
+                                <span class="block mt-1 text-[10px] text-center text-gray-500 dark:text-gray-400" x-text="d.label"></span>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Booking info -->
+                    <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Booking Info</p>
+                    <dl class="text-xs divide-y divide-gray-100 dark:divide-gray-800 mb-4">
+                        <div class="flex justify-between py-2"><dt class="text-gray-400">Contact</dt><dd class="font-medium text-gray-900 dark:text-white" x-text="detailsModal.r.contact"></dd></div>
+                        <div class="flex justify-between py-2"><dt class="text-gray-400">Email</dt><dd class="font-medium text-gray-900 dark:text-white" x-text="detailsModal.r.email"></dd></div>
+                        <div class="flex justify-between py-2"><dt class="text-gray-400">Check-in / Out</dt><dd class="font-medium text-gray-900 dark:text-white" x-text="detailsModal.r.dates"></dd></div>
+                        <div class="flex justify-between py-2"><dt class="text-gray-400">Number of Pax</dt><dd class="font-medium text-gray-900 dark:text-white" x-text="detailsModal.r.pax"></dd></div>
+                        <div class="flex justify-between py-2"><dt class="text-gray-400">Total Payment</dt><dd class="font-bold text-gray-900 dark:text-white" x-text="peso(totalOf(detailsModal.r)) + ' (' + stayLabel(detailsModal.r) + ')'"></dd></div>
+                        <div class="flex justify-between py-2"><dt class="text-gray-400">Reservation Fee</dt><dd class="font-medium text-gray-900 dark:text-white" x-text="peso(feeOf(detailsModal.r))"></dd></div>
+                        <div class="flex justify-between py-2"><dt class="text-gray-400">Remarks</dt><dd class="font-medium text-gray-900 dark:text-white text-right max-w-[60%]" x-text="detailsModal.r.remarks || '—'"></dd></div>
+                    </dl>
+
+                    <!-- Stay history (repeat guests) -->
+                    <template x-if="staysOf(detailsModal.r).length > 1">
+                        <div class="mb-4">
+                            <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Stay History</p>
+                            <div class="rounded-xl border border-gray-100 dark:border-gray-800 divide-y divide-gray-100 dark:divide-gray-800 text-xs">
+                                <template x-for="s in staysOf(detailsModal.r)" :key="s.id">
+                                    <div class="flex items-center justify-between gap-3 p-2.5">
+                                        <div><span class="font-semibold text-gray-900 dark:text-white" x-text="s.dates"></span><span class="block text-[10px] text-gray-400" x-text="s.bookingRef + ' · ' + s.pax + ' pax · ' + peso(paymentTotal(s))"></span></div>
+                                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold" :class="statusClass(s.status)" x-text="s.status"></span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <template x-if="detailsModal.r.status === 'Reserved' || detailsModal.r.pass">
+                        <div class="mb-4">
+                            <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-2">Lobby Clearance Pass</p>
+                            <template x-if="detailsModal.r.pass">
+                                <div class="rounded-xl border-2 border-gray-800 p-4 text-center mb-3 bg-white text-gray-900">
+                                    <p class="font-extrabold text-xs uppercase leading-snug">Alpina Heights Condominium Property Management Office (PMO)</p>
+                                    <p class="text-[10px] text-gray-600 mt-1">Parañaque City, Metro Manila • Near SM Bicutan • Official Lobby Clearance</p>
+                                    <dl class="text-xs text-left mt-3 divide-y divide-gray-200">
+                                        <div class="flex justify-between py-1.5"><dt class="text-gray-500">Pass No.</dt><dd class="font-bold" x-text="detailsModal.r.pass.no"></dd></div>
+                                        <div class="flex justify-between py-1.5"><dt class="text-gray-500">Guest</dt><dd class="font-bold" x-text="detailsModal.r.name"></dd></div>
+                                        <div class="flex justify-between py-1.5"><dt class="text-gray-500">Stay</dt><dd class="font-bold" x-text="detailsModal.r.dates"></dd></div>
+                                    </dl>
+                                    <p class="text-[10px] text-gray-500 mt-3">Please present this pass at the lobby.</p>
+                                </div>
+                            </template>
+                            <p x-show="detailsModal.r.pass && detailsModal.r.pass.sentAt" class="text-[11px] text-green-600 dark:text-green-400 mb-2" x-text="detailsModal.r.pass && detailsModal.r.pass.sentAt ? 'Email sent to ' + (detailsModal.r.pass.sentTo || detailsModal.r.email) + ' · ' + new Date(detailsModal.r.pass.sentAt).toLocaleString('en-US') : ''"></p>
+                            <div class="flex gap-2">
+                                <button x-show="!detailsModal.r.pass" @click="generatePass(detailsModal.r)" class="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-amber-600 hover:bg-amber-700">Generate pass</button>
+                                <button x-show="detailsModal.r.pass && !detailsModal.r.pass.sentAt" @click="sendPass(detailsModal.r)" class="px-4 py-2 rounded-xl text-xs font-semibold text-white bg-sky-600 hover:bg-sky-700">Send to guest email</button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <div class="flex justify-end">
+                        <button @click="closeDetails()" class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">Close</button>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <!-- DAMAGE FEE MODAL -->
+    <div x-show="damageModal.open" x-transition.opacity @keydown.escape.window="closeDamage()"
+         class="fixed inset-0 z-[60] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4" style="display: none;">
+        <div @click.away="closeDamage()" class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm p-6 border border-gray-100 dark:border-gray-800">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="w-11 h-11 rounded-xl flex items-center justify-center text-lg shrink-0 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-400"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+                <h3 class="font-bold text-gray-900 dark:text-white text-base">Damage fee</h3>
+            </div>
+            <p class="text-sm text-gray-500 dark:text-gray-400 mb-4" x-text="'Record the payment of ' + (damageModal.r ? damageModal.r.name : '') + ' for any broken or damaged item in the unit. Set to 0 to remove.'"></p>
+            <div class="mb-4">
+                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Amount</label>
+                <div class="relative">
+                    <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">₱</span>
+                    <input type="number" min="0" step="50" x-model="damageModal.amount" @input="damageModal.error = ''" @keydown.enter="saveDamage()" placeholder="0"
+                        class="w-full pl-9 pr-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-900 dark:text-white">
+                </div>
+            </div>
+            <div class="mb-6">
+                <label class="block text-xs font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">What was damaged</label>
+                <input type="text" x-model="damageModal.note" @keydown.enter="saveDamage()" placeholder="e.g. Broken glass, stained bedsheet"
+                    class="w-full px-4 py-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 text-gray-900 dark:text-white">
+                <p x-show="damageModal.error" x-text="damageModal.error" class="text-xs text-red-600 dark:text-red-400 mt-2"></p>
+            </div>
+            <div class="flex justify-end gap-3">
+                <button @click="closeDamage()" class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all">Cancel</button>
+                <button @click="saveDamage()" class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white shadow-md transition-all bg-amber-600 hover:bg-amber-700 shadow-amber-600/20">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEND EMAIL MODAL (pass + booking confirmation + terms) -->
+    <div x-show="emailModal.open" x-transition.opacity @keydown.escape.window="emailModal.open = false"
+         class="fixed inset-0 z-[65] flex items-center justify-center bg-gray-900/60 backdrop-blur-sm p-4" style="display: none;">
+        <div @click.away="emailModal.open = false" class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-2xl p-6 border border-gray-100 dark:border-gray-800 max-h-[92vh] overflow-y-auto">
+            <template x-if="emailModal.r">
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="font-bold text-gray-900 dark:text-white text-base"><i class="fa-regular fa-envelope text-amber-600 mr-2"></i>New email</h3>
+                        <button @click="emailModal.open = false" class="w-8 h-8 rounded-lg text-gray-400 hover:text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-800"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                    <div class="space-y-2 mb-3">
+                        <div class="flex items-center gap-3"><label class="w-14 text-xs font-semibold text-gray-400 uppercase">To</label><input type="email" x-model="emailModal.to" @input="emailModal.error = ''" class="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"></div>
+                        <div class="flex items-center gap-3"><label class="w-14 text-xs font-semibold text-gray-400 uppercase">Subject</label><input type="text" x-model="emailModal.subject" class="flex-1 px-3 py-2 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-amber-500"></div>
+                    </div>
+
+                    <div class="rounded-xl border border-gray-200 dark:border-gray-700 p-5 bg-white text-gray-900 text-xs leading-relaxed">
+                        <p class="mb-3">Hi <b x-text="emailModal.r.name"></b>,</p>
+                        <p class="mb-4">Thank you for booking with <b>Ulpiano's Staycation</b>. Your reservation is <b>confirmed</b>. Please find your booking details, lobby clearance pass, and our terms and conditions below.</p>
+
+                        <p class="font-bold uppercase text-[10px] tracking-wider text-gray-500 mb-1">Booking Confirmation</p>
+                        <table class="w-full mb-4"><tbody class="divide-y divide-gray-200">
+                            <tr><td class="py-1 text-gray-500">Booking Ref</td><td class="py-1 text-right font-semibold" x-text="emailModal.r.bookingRef"></td></tr>
+                            <tr><td class="py-1 text-gray-500">Stay</td><td class="py-1 text-right font-semibold" x-text="emailModal.r.dates + ' (' + stayLabel(emailModal.r) + ')'"></td></tr>
+                            <tr><td class="py-1 text-gray-500">Number of Pax</td><td class="py-1 text-right font-semibold" x-text="emailModal.r.pax"></td></tr>
+                            <tr><td class="py-1 text-gray-500">Total Payment</td><td class="py-1 text-right font-semibold" x-text="peso(totalOf(emailModal.r))"></td></tr>
+                            <tr><td class="py-1 text-gray-500">Reservation Fee</td><td class="py-1 text-right font-semibold" x-text="peso(feeOf(emailModal.r))"></td></tr>
+                            <tr><td class="py-1 text-gray-500">Balance upon check-in</td><td class="py-1 text-right font-semibold" x-text="peso(balanceOf(emailModal.r))"></td></tr>
+                            <tr><td class="py-1 text-gray-500">Security Deposit</td><td class="py-1 text-right font-semibold" x-text="peso(emailModal.r.deposit) + ' (refundable)'"></td></tr>
+                        </tbody></table>
+
+                        <p class="font-bold uppercase text-[10px] tracking-wider text-gray-500 mb-1">Lobby Clearance Pass</p>
+                        <div class="rounded-xl border-2 border-gray-800 p-4 text-center mb-4">
+                            <p class="font-extrabold text-xs uppercase leading-snug">Alpina Heights Condominium Property Management Office (PMO)</p>
+                            <p class="text-[10px] text-gray-600 mt-1">Parañaque City, Metro Manila • Near SM Bicutan • Official Lobby Clearance</p>
+                            <dl class="text-xs text-left mt-3 divide-y divide-gray-200">
+                                <div class="flex justify-between py-1.5"><dt class="text-gray-500">Pass No.</dt><dd class="font-bold" x-text="emailModal.r.pass && emailModal.r.pass.no"></dd></div>
+                                <div class="flex justify-between py-1.5"><dt class="text-gray-500">Guest</dt><dd class="font-bold" x-text="emailModal.r.name"></dd></div>
+                                <div class="flex justify-between py-1.5"><dt class="text-gray-500">Stay</dt><dd class="font-bold" x-text="emailModal.r.dates"></dd></div>
+                            </dl>
+                            <p class="text-[10px] text-gray-500 mt-3">Please present this pass at the lobby.</p>
+                        </div>
+
+                        <p class="font-bold uppercase text-[10px] tracking-wider text-gray-500 mb-1">Terms and Conditions</p>
+                        <ol class="list-decimal pl-4 space-y-1 mb-4">
+                            <template x-for="t in terms" :key="t"><li x-text="t"></li></template>
+                        </ol>
+                        <p>By checking in, you agree to the terms above. See you soon!</p>
+                        <p class="mt-3">Warm regards,<br><b>Ulpiano's Staycation</b></p>
+                    </div>
+
+                    <p x-show="emailModal.error" x-text="emailModal.error" class="text-xs text-red-600 dark:text-red-400 mt-2"></p>
+                    <div class="flex justify-end gap-3 mt-4">
+                        <button @click="emailModal.open = false" class="px-5 py-2.5 rounded-xl text-sm font-semibold bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700">Cancel</button>
+                        <button @click="sendEmail()" class="px-5 py-2.5 rounded-xl text-sm font-semibold text-white bg-sky-600 hover:bg-sky-700 shadow-md"><i class="fa-solid fa-paper-plane mr-1"></i> Send</button>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+    <script>
+        function adminDashboard() {
+            return {
+                isLoggedIn: false,
+                darkMode: false,
+                currentTab: 'dashboard',
+                loginForm: { username: '', password: '' },
+                loginError: '',
+                calendar: null,
+
+                // ---- Reservations data & filters ----
+                statuses: ['All', 'Pending', 'Reserved', 'Completed', 'Cancelled'],
+                statusFilter: 'All',
+                search: '',
+
+                // ---- A-Z filter & sorting ----
+                letters: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split(''),
+                letter: 'All',      // letter filter ng Guest Lists
+                payLetter: 'All',   // letter filter ng Payment Details
+
+                firstLetter(r) { return (r.name || '').trim().charAt(0).toUpperCase(); },
+                byName(a, b) { return a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }); },
+
+                guestLetterCount(l) {
+                    return this.reservations.filter(r =>
+                        (this.statusFilter === 'All' || r.status === this.statusFilter) &&
+                        this.firstLetter(r) === l
+                    ).length;
+                },
+                payLetterCount(l) {
+                    return this.reservations.filter(r => this.firstLetter(r) === l).length;
+                },
+
+                // ---- Server connection (Flask API) ----
+                token: '',
+                reservations: [],
+
+                async api(path, method = 'GET', body) {
+                    const res = await fetch(path, {
+                        method,
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + this.token },
+                        body: body ? JSON.stringify(body) : undefined
+                    });
+                    let data = {};
+                    try { data = await res.json(); } catch (e) {}
+                    if (res.status === 401 && path !== '/api/admin/login') { this.forceLogout(); throw new Error('Session expired. Please log in again.'); }
+                    if (!res.ok) throw new Error(data.message || 'Request failed.');
+                    return data;
+                },
+                mapBooking(b) {
+                    const ci = this.parseDate(b.checkIn), co = this.parseDate(b.checkOut);
+                    return { ...b,
+                        dates: this.shortDate(ci) + ' - ' + this.shortDate(co) + ', ' + co.getFullYear(),
+                        idImage: '', selfieImage: '', paymentImage: '', docsLoaded: false,
+                        pass: b.passNo ? { no: b.passNo, sentAt: b.passSentAt, sentTo: b.passSentTo } : null };
+                },
+                async loadAll(silent) {
+                    try {
+                        this.loadChats();
+                        const list = await this.api('/api/admin/bookings');
+                        const old = Object.fromEntries(this.reservations.map(r => [r.id, r]));
+                        const mapped = list.map(b => {
+                            const m = this.mapBooking(b), o = old[m.id];
+                            if (o) { m.idImage = o.idImage; m.selfieImage = o.selfieImage; m.paymentImage = o.paymentImage; m.docsLoaded = o.docsLoaded; }
+                            return m;
+                        });
+                        this.reservations = mapped;
+                        if (this.detailsModal.open && this.detailsModal.r) {
+                            const n = mapped.find(x => x.id === this.detailsModal.r.id);
+                            if (n) this.detailsModal.r = n;
+                        }
+                    } catch (e) { if (!silent) alert(e.message); }
+                },
+                async patch(r, fields) {
+                    const b = await this.api('/api/admin/bookings/' + r.id, 'PATCH', fields);
+                    const keep = { idImage: r.idImage, selfieImage: r.selfieImage, paymentImage: r.paymentImage, docsLoaded: r.docsLoaded };
+                    Object.assign(r, this.mapBooking(b), keep);
+                },
+                async verifyPassword(pw) {
+                    try { await this.api('/api/admin/verify-password', 'POST', { password: pw }); return true; } catch (e) { return false; }
+                },
+                forceLogout() { this.isLoggedIn = false; this.token = ''; try { sessionStorage.removeItem('adminToken'); } catch (e) {} },
+
+                get filtered() {
+                    const q = this.search.trim().toLowerCase();
+                    return this.reservations
+                        .filter(r =>
+                            (this.statusFilter === 'All' || r.status === this.statusFilter) &&
+                            (!q || r.name.toLowerCase().includes(q)) &&
+                            (this.letter === 'All' || this.firstLetter(r) === this.letter)
+                        )
+                        .sort((a, b) => this.byName(a, b) || b.checkIn.localeCompare(a.checkIn));
+                },
+
+                count(status) {
+                    return status === 'All'
+                        ? this.reservations.length
+                        : this.reservations.filter(r => r.status === status).length;
+                },
+
+                openList(status) {
+                    this.statusFilter = status;
+                    this.search = '';
+                    this.letter = 'All';
+                    this.currentTab = 'reservations';
+                },
+
+                // ---- Recent bookings (newest booking first) ----
+                get recentBookings() {
+                    return [...this.reservations].sort((a, b) => b.bookedAt.localeCompare(a.bookedAt) || b.id - a.id).slice(0, 5);
+                },
+
+                // ---- Repeat customers: one guest = same email/contact, many bookings ----
+                guestKey(r) { return (r.email || r.contact || r.name).trim().toLowerCase(); },
+                staysOf(r) {
+                    const k = this.guestKey(r);
+                    return this.reservations.filter(x => this.guestKey(x) === k).sort((a, b) => b.checkIn.localeCompare(a.checkIn));
+                },
+
+                // ---- Notifications (clickable, Facebook-style) ----
+                readNotifs: (() => { try { return JSON.parse(localStorage.getItem('readNotifs') || '{}'); } catch (e) { return {}; } })(),
+                get notifications() {
+                    const list = [];
+                    this.recentBookings.slice(0, 3).forEach(r => list.push({
+                        id: 'b' + r.id, kind: 'booking', ref: r,
+                        text: 'New reservation from ' + r.name,
+                        sub: r.dates + ' · ' + r.pax + ' pax · ' + r.status,
+                        ts: this.parseDate(r.bookedAt).getTime() + 36000000
+                    }));
+                    this.chats.forEach(c => {
+                        const n = this.unreadOf(c);
+                        if (n > 0) list.push({ id: 'c' + c.id + '-' + this.lastOf(c).ts, kind: 'chat', ref: c, text: 'New message from ' + c.name, sub: this.lastOf(c).text, ts: this.lastOf(c).ts });
+                    });
+                    return list.map(n => ({ ...n, read: !!this.readNotifs[n.id] })).sort((a, b) => b.ts - a.ts);
+                },
+                get unreadNotifs() { return this.notifications.filter(n => !n.read).length; },
+                markAllRead() { this.notifications.forEach(n => { this.readNotifs[n.id] = true; }); },
+                openNotif(n) {
+                    this.readNotifs[n.id] = true;
+                    if (n.kind === 'chat') { this.currentTab = 'messages'; this.openChat(n.ref); }
+                    else { this.openList(n.ref.status); this.search = n.ref.name; }
+                },
+                ago(ts) {
+                    const m = Math.max(1, Math.round((Date.now() - ts) / 60000));
+                    if (m < 60) return m + 'm ago';
+                    const h = Math.round(m / 60);
+                    if (h < 24) return h + 'h ago';
+                    const d = Math.round(h / 24);
+                    return d + (d === 1 ? ' day ago' : ' days ago');
+                },
+
+                // ---- Guest details modal ----
+                detailsModal: { open: false, r: null },
+                async openDetails(r) {
+                    this.detailsModal = { open: true, r };
+                    if (!r.docsLoaded) {
+                        try {
+                            const d = await this.api('/api/admin/bookings/' + r.id + '/docs');
+                            r.idImage = d.idImage; r.selfieImage = d.selfieImage; r.paymentImage = d.paymentImage; r.docsLoaded = true;
+                        } catch (e) {}
+                    }
+                },
+                closeDetails() { this.detailsModal.open = false; },
+
+                // ---- Damage fee modal (edited from Guest Lists only) ----
+                damageModal: { open: false, r: null, amount: '', note: '', error: '' },
+                openDamage(r) {
+                    if (!this.canEditDamage(r)) return;
+                    this.damageModal = { open: true, r, amount: r.damageFee || '', note: r.damageNote || '', error: '' };
+                },
+                closeDamage() { this.damageModal.open = false; this.damageModal.error = ''; },
+                async saveDamage() {
+                    if (!this.canEditDamage(this.damageModal.r)) return;
+                    const raw = String(this.damageModal.amount).trim();
+                    const n = raw === '' ? 0 : Number(raw);
+                    if (!isFinite(n) || n < 0) { this.damageModal.error = 'Enter a valid amount.'; return; }
+                    if (n > 0 && !this.damageModal.note.trim()) { this.damageModal.error = 'Please describe what was damaged.'; return; }
+                    try {
+                        await this.patch(this.damageModal.r, { damageFee: n, damageNote: this.damageModal.note.trim() });
+                        this.closeDamage();
+                    } catch (e) { this.damageModal.error = e.message; }
+                },
+
+                // ---- Confirm dialog (OK / Cancel) ----
+                confirmModal: { open: false, title: '', message: '', danger: false, needsPassword: false, password: '', error: '', onOk: null },
+
+                openConfirm(opts) {
+                    this.confirmModal = {
+                        open: true, title: opts.title, message: opts.message, danger: !!opts.danger,
+                        needsPassword: !!opts.needsPassword, password: '', error: '', onOk: opts.onOk
+                    };
+                },
+
+                askConfirm(r, status, label) {
+                    const secure = status === 'Completed' || status === 'Cancelled';
+                    let message;
+                    if (status === 'Completed') {
+                        message = 'Completing the booking of ' + r.name + ' will lock it. The damage fee and remarks can no longer be edited. Enter the admin password to continue.';
+                    } else if (status === 'Cancelled') {
+                        message = 'Cancelling the booking of ' + r.name + ' requires the admin password. Enter it to continue.';
+                    } else {
+                        message = 'Change the status of ' + r.name + ' to ' + status + '?';
+                    }
+                    this.openConfirm({
+                        title: label + ' booking?',
+                        message,
+                        danger: status === 'Cancelled',
+                        needsPassword: secure,
+                        onOk: async () => {
+                            await this.patch(r, { status });
+                            if (this.drafts[r.id]) delete this.drafts[r.id].status;
+                            if (status === 'Completed' || status === 'Cancelled') delete this.drafts[r.id];
+                        }
+                    });
+                },
+
+                async applyConfirm() {
+                    if (this.confirmModal.needsPassword) {
+                        const ok = await this.verifyPassword(this.confirmModal.password);
+                        if (!ok) { this.confirmModal.error = 'Incorrect password. Please try again.'; return; }
+                    }
+                    const fn = this.confirmModal.onOk;
+                    this.closeConfirm();
+                    if (fn) { try { await fn(); } catch (e) { alert(e.message); } }
+                },
+
+                closeConfirm() {
+                    this.confirmModal.open = false;
+                    this.confirmModal.password = '';
+                    this.confirmModal.error = '';
+                },
+
+                // ---- Inline edit of Status / Remarks (OK / Cancel) ----
+                drafts: {},
+                isLocked(r) { return r.status === 'Completed' || r.status === 'Cancelled'; },
+                getField(r, f) { const d = this.drafts[r.id]; return d && d[f] !== undefined ? d[f] : r[f]; },
+                setDraft(r, f, v) { this.drafts[r.id] = { ...(this.drafts[r.id] || {}), [f]: v }; },
+
+                statusOptions(r) {
+                    const opts = ['Pending', 'Reserved', 'Cancelled', 'Completed'];
+                    if (r.status === 'Confirmed') opts.unshift('Confirmed'); // para hindi mawala ang existing na Confirmed
+                    return opts;
+                },
+
+                isDirty(r, f) {
+                    const d = this.drafts[r.id];
+                    if (!d || d[f] === undefined || this.isLocked(r)) return false;
+                    return d[f] !== r[f];
+                },
+
+                saveDraft(r, f) {
+                    if (!this.isDirty(r, f)) return;
+                    const v = this.drafts[r.id][f];
+                    if (f === 'status') {
+                        const label = v === 'Cancelled' ? 'Cancel' : v === 'Completed' ? 'Complete' : 'Update';
+                        this.askConfirm(r, v, label);
+                        return; // ide-delete ang draft pagkatapos mag-OK sa modal
+                    }
+                    this.patch(r, { remarks: String(v).trim() })
+                        .then(() => { delete this.drafts[r.id][f]; })
+                        .catch(e => alert(e.message));
+                },
+
+                cancelDraft(r, f) { if (this.drafts[r.id]) delete this.drafts[r.id][f]; },
+
+                // ---- Payments & earnings ----
+                period: 'weekly',
+                periods: [
+                    { id: 'weekly',  label: 'Weekly' },
+                    { id: 'monthly', label: 'Monthly' },
+                    { id: 'all',     label: 'All Time' }
+                ],
+
+                // Clickable earnings cards: week | month | year | all | null
+                rangeFilter: null,
+                damageOnly: false,
+                get rangeLabel() {
+                    return { week: 'This Week', month: 'This Month', year: 'Year ' + new Date().getFullYear(), all: 'All Time' }[this.rangeFilter] || '';
+                },
+                setRange(k) {
+                    this.rangeFilter = this.rangeFilter === k ? null : k;
+                    this.damageOnly = false;
+                    if (this.rangeFilter) {
+                        this.period = { week: 'weekly', month: 'monthly', year: 'monthly', all: 'all' }[k];
+                        this.payLetter = 'All';
+                        this.$nextTick(() => {
+                            const el = document.getElementById('income-breakdown');
+                            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        });
+                    }
+                },
+                toggleDamageOnly() {
+                    this.damageOnly = !this.damageOnly;
+                    if (this.damageOnly) {
+                        this.rangeFilter = null;
+                        this.payLetter = 'All';
+                        this.$nextTick(() => {
+                            const el = document.getElementById('payment-details');
+                            if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        });
+                    }
+                },
+                inRange(r) {
+                    const k = this.rangeFilter;
+                    if (!k || k === 'all') return true;
+                    const d = this.parseDate(r.checkIn), now = new Date();
+                    if (k === 'week') return this.weekStart(d).getTime() === this.weekStart(now).getTime();
+                    if (k === 'month') return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+                    if (k === 'year') return d.getFullYear() === now.getFullYear();
+                    return true;
+                },
+
+                // ---- Calendar linked to booking status ----
+                calColors: { Pending:['#ffedd5','#9a3412'], Confirmed:['#dbeafe','#1e40af'], Reserved:['#dbeafe','#1e40af'], Completed:['#fef08a','#854d0e'], Cancelled:['#fecaca','#991b1b'] },
+                fmt(d) { return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0'); },
+                spanOf(r) { return { s: this.parseDate(r.checkIn), e: this.parseDate(r.checkOut) }; },
+                dayClass(arg) {
+                    const t = this.fmt(arg.date); let hit = null;
+                    for (const r of this.reservations) {
+                        const { s, e } = this.spanOf(r);
+                        if (t >= this.fmt(s) && t < this.fmt(e) && (!hit || hit.status === 'Cancelled')) hit = r;
+                    }
+                    return ['cal-' + (!hit ? 'available' : hit.status === 'Confirmed' ? 'reserved' : hit.status.toLowerCase())];
+                },
+                refreshCalendar() {
+                    if (!this.calendar) return;
+                    this.calendar.removeAllEvents();
+                    this.reservations.forEach(r => {
+                        const { s, e } = this.spanOf(r);
+                        this.calendar.addEvent({ title: r.name, start: this.fmt(s), end: this.fmt(e), allDay: true, classNames: ['ev-' + (r.status === 'Confirmed' ? 'reserved' : r.status.toLowerCase())] });
+                    });
+                    this.calendar.setOption('dayCellClassNames', (a) => this.dayClass(a));
+                },
+
+                // ---- Live chat (connected to the server: /api/admin/chats) ----
+                activeId: null, chatSearch: '', newMsg: '', chats: [], chatBusy: false,
+                get activeChat() { return this.chats.find(c => c.id === this.activeId); },
+                get chatList() {
+                    const q = this.chatSearch.trim().toLowerCase();
+                    return this.chats.filter(c => !q || c.name.toLowerCase().includes(q)).sort((a, b) => this.lastOf(b).ts - this.lastOf(a).ts);
+                },
+                get unreadTotal() { return this.chats.reduce((t, c) => t + this.unreadOf(c), 0); },
+                lastOf(c) { return c.messages[c.messages.length - 1]; },
+                unreadOf(c) { return c.messages.filter(m => m.from === 'guest' && !m.read).length; },
+                initials(n) { return n.split(' ').filter(Boolean).map(w => w[0]).slice(0, 2).join('').toUpperCase(); },
+                timeOf(ts) { return new Date(ts).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' }); },
+                sameDay(a, b) { return new Date(a).toDateString() === new Date(b).toDateString(); },
+                dayLabel(ts) {
+                    if (this.sameDay(ts, Date.now())) return 'Today';
+                    if (this.sameDay(ts, Date.now() - 86400000)) return 'Yesterday';
+                    return new Date(ts).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                },
+                listTime(ts) {
+                    if (this.sameDay(ts, Date.now())) return this.timeOf(ts);
+                    if (this.sameDay(ts, Date.now() - 86400000)) return 'Yesterday';
+                    return new Date(ts).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                },
+                showDate(c, i) { return i === 0 || !this.sameDay(c.messages[i].ts, c.messages[i - 1].ts); },
+                isLastAdmin(c, i) { for (let j = c.messages.length - 1; j >= 0; j--) if (c.messages[j].from === 'admin') return j === i; return false; },
+                chatUrl(c, action) { return '/api/admin/chats/' + encodeURIComponent(c.id) + '/' + action; },
+                async loadChats() {
+                    if (this.chatBusy || !this.isLoggedIn) return;
+                    this.chatBusy = true;
+                    try {
+                        const before = this.activeChat ? this.activeChat.messages.length : 0;
+                        this.chats = await this.api('/api/admin/chats');
+                        const c = this.activeChat;
+                        if (c) {
+                            if (this.currentTab === 'messages' && this.unreadOf(c) > 0) {   // chat is open: mark as read
+                                c.messages.forEach(m => { if (m.from === 'guest') m.read = true; });
+                                this.api(this.chatUrl(c, 'read'), 'POST').catch(() => {});
+                            }
+                            if (c.messages.length !== before) this.scrollChat();
+                        }
+                    } catch (e) { /* ignore: will retry on the next tick */ }
+                    finally { this.chatBusy = false; }
+                },
+                openChat(c) {
+                    this.activeId = c.id;
+                    c.messages.forEach(m => { if (m.from === 'guest') m.read = true; });
+                    this.api(this.chatUrl(c, 'read'), 'POST').catch(() => {});
+                    this.scrollChat();
+                },
+                scrollChat() { this.$nextTick(() => { const el = this.$refs.chatBody; if (el) el.scrollTop = el.scrollHeight; }); },
+                async sendMsg() {
+                    const text = this.newMsg.trim(), c = this.activeChat;
+                    if (!text || !c) return;
+                    this.newMsg = '';
+                    c.messages.push({ from: 'admin', text, ts: Date.now(), seen: false });
+                    this.scrollChat();
+                    try { await this.api(this.chatUrl(c, 'reply'), 'POST', { text }); await this.loadChats(); }
+                    catch (e) { alert(e.message); }
+                },
+
+                // ---- Print ----
+                printEarnings() {
+                    this.openConfirm({ title: 'Print earnings?', message: 'Print the rows currently shown in Payment Details?', onOk: () => setTimeout(() => this.doPrint(), 250) });
+                },
+                doPrint() {
+                    const root = document.documentElement, wasDark = root.classList.contains('dark');
+                    root.classList.remove('dark');
+                    this.$nextTick(() => { window.print(); root.classList.toggle('dark', wasDark); });
+                },
+
+                // ---- Pricing is computed by the server (app.py): Total = nights x (2,500 + 500 per extra pax beyond 2); reservation fee = 1,000 per night ----
+                stayDays(r) { return r.nights; },
+                totalOf(r) { return r.total; },
+                stayLabel(r) { return r.nights + (r.nights === 1 ? ' night' : ' nights'); },
+                feeOf(r) { return r.reservationFee; },
+                docsOf(r) { return [{ label: 'Valid ID', src: r.idImage || '' }, { label: 'Selfie with ID', src: r.selfieImage || '' }, { label: 'Payment Proof', src: r.paymentImage || '' }]; },
+                async generatePass(r) {
+                    try { await this.api('/api/admin/bookings/' + r.id + '/pass', 'POST'); await this.loadAll(true); }
+                    catch (e) { alert(e.message); }
+                },
+                // ---- Send pass + confirmation + T&C by email ----
+                // Edit these terms to match your real house rules
+                terms: [
+                    'Upon arrival, please sign the rental contract, settle the remaining balance (total less the reservation fee), and pay the ₱1,000 security deposit.',
+                    'All guests must present a valid government-issued ID upon check-in.',
+                    'The security deposit is fully refundable after check-out, once the unit has been inspected and found free of damage.',
+                    'Check-in is 2:00 PM and check-out is 12:00 NN, unless agreed otherwise.',
+                    'Please arrive at least 30 minutes before your booked time.',
+                    'The reservation fee is non-refundable.',
+                    'Guests are responsible for any damage, loss or breakage in the unit. The cost will be charged as a damage fee.',
+                    'The number of guests must not exceed the pax declared in your booking.',
+                    'No smoking, no illegal drugs, and no pets. Please keep noise down and follow the condominium rules and quiet hours.',
+                    'Present your lobby clearance pass at the lobby on arrival.',
+                    'Management is not liable for lost or stolen personal belongings.'
+                ],
+                emailModal: { open: false, r: null, to: '', subject: '', error: '' },
+                sendPass(r) {
+                    this.emailModal = { open: true, r, to: r.email, subject: 'Booking Confirmation & Lobby Pass – ' + r.bookingRef + ' · Ulpiano\'s Staycation', error: '' };
+                },
+                async sendEmail() {
+                    const to = this.emailModal.to.trim();
+                    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)) { this.emailModal.error = 'Enter a valid email address.'; return; }
+                    const r = this.emailModal.r;
+                    try {
+                        await this.api('/api/admin/bookings/' + r.id + '/send-pass', 'POST', { to, subject: this.emailModal.subject, terms: this.terms });
+                        await this.loadAll(true);
+                        this.emailModal.open = false;
+                        alert('Email sent to ' + to);
+                    } catch (e) { this.emailModal.error = e.message; }
+                },
+                peso(n) { return '₱' + Number(n || 0).toLocaleString('en-US'); },
+                parseDate(str) { const [y, m, d] = str.split('-').map(Number); return new Date(y, m - 1, d); },
+                weekStart(d) { const x = new Date(d.getFullYear(), d.getMonth(), d.getDate()); x.setDate(x.getDate() - ((x.getDay() + 6) % 7)); return x; },
+                shortDate(d) { return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }); },
+
+                countsAsIncome(r) { return ['Confirmed', 'Reserved', 'Completed'].includes(r.status); },
+                balanceOf(r) { return Math.max(0, this.totalOf(r) - this.feeOf(r)); },
+                resFeeOf(r) { return this.countsAsIncome(r) ? this.feeOf(r) : 0; },
+                balPaidOf(r) { return this.countsAsIncome(r) && r.balancePaid ? this.balanceOf(r) : 0; },
+                incomeOf(r) { return this.resFeeOf(r) + this.balPaidOf(r) + this.damageOf(r); },
+                damageOf(r) { return this.countsAsIncome(r) ? (Number(r.damageFee) || 0) : 0; },
+                // Total Payment already includes the reservation fee and the damage fee
+                paymentTotal(r) { return this.totalOf(r) + (Number(r.damageFee) || 0); },
+                // Damage fee can be edited in Guest Lists until the booking is Completed or Cancelled
+                canEditDamage(r) { return !!r && !this.isLocked(r); },
+                get printTotal() { return this.sumBy(this.paymentRows, r => this.incomeOf(r)); },
+                toCollectOf(r) { return this.countsAsIncome(r) && !r.balancePaid ? this.balanceOf(r) : 0; },
+                sumBy(list, fn) { return list.reduce((t, r) => t + fn(r), 0); },
+
+                get thisWeekIncome() {
+                    const ws = this.weekStart(new Date()).getTime();
+                    return this.sumBy(this.reservations.filter(r => this.weekStart(this.parseDate(r.checkIn)).getTime() === ws), r => this.incomeOf(r));
+                },
+                get thisMonthIncome() {
+                    const now = new Date();
+                    return this.sumBy(this.reservations.filter(r => {
+                        const d = this.parseDate(r.checkIn);
+                        return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+                    }), r => this.incomeOf(r));
+                },
+                get yearIncome() {
+                    const y = new Date().getFullYear();
+                    return this.sumBy(this.reservations.filter(r => this.parseDate(r.checkIn).getFullYear() === y), r => this.incomeOf(r));
+                },
+                get allTimeIncome() { return this.sumBy(this.reservations, r => this.incomeOf(r)); },
+                get damageTotal() { return this.sumBy(this.reservations.filter(r => this.countsAsIncome(r)), r => Number(r.damageFee) || 0); },
+                get toCollectTotal() { return this.sumBy(this.reservations, r => this.toCollectOf(r)); },
+                get depositsHeld() { return this.sumBy(this.reservations.filter(r => r.depositStatus === 'Held'), r => r.deposit); },
+
+                get groups() {
+                    const map = {};
+                    this.reservations.filter(r => this.countsAsIncome(r) && this.inRange(r)).forEach(r => {
+                        const d = this.parseDate(r.checkIn);
+                        let key, label, sort;
+                        if (this.period === 'weekly') {
+                            const start = this.weekStart(d);
+                            const end = new Date(start); end.setDate(end.getDate() + 6);
+                            key = 'w' + start.getTime(); sort = start.getTime();
+                            label = this.shortDate(start) + ' – ' + this.shortDate(end) + ', ' + end.getFullYear();
+                        } else if (this.period === 'monthly') {
+                            key = 'm' + d.getFullYear() + '-' + d.getMonth();
+                            sort = new Date(d.getFullYear(), d.getMonth(), 1).getTime();
+                            label = d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+                        } else {
+                            key = 'all'; sort = 0; label = 'All Time';
+                        }
+                        const g = map[key] || (map[key] = { key, label, sort, bookings: 0, resFees: 0, balPaid: 0, income: 0, toCollect: 0 });
+                        g.bookings += 1;
+                        g.resFees += this.resFeeOf(r);
+                        g.balPaid += this.balPaidOf(r);
+                        g.income += this.incomeOf(r);
+                        g.toCollect += this.toCollectOf(r);
+                    });
+                    return Object.values(map).sort((a, b) => b.sort - a.sort);
+                },
+                get maxIncome() { return Math.max(0, ...this.groups.map(g => g.income)); },
+                get groupTotals() {
+                    const t = { bookings: 0, resFees: 0, balPaid: 0, income: 0, toCollect: 0 };
+                    this.groups.forEach(g => { Object.keys(t).forEach(k => t[k] += g[k]); });
+                    return t;
+                },
+                get paymentRows() {
+                    return this.reservations
+                        .filter(r => this.payLetter === 'All' || this.firstLetter(r) === this.payLetter)
+                        .filter(r => !this.rangeFilter || (this.countsAsIncome(r) && this.inRange(r)))
+                        .filter(r => !this.damageOnly || (this.countsAsIncome(r) && Number(r.damageFee) > 0))
+                        .sort((a, b) => this.byName(a, b) || b.checkIn.localeCompare(a.checkIn));
+                },
+
+                markBalancePaid(r) {
+                    this.openConfirm({
+                        title: 'Mark balance as paid?',
+                        message: 'Confirm that ' + r.name + ' has paid the remaining balance of ' + this.peso(this.balanceOf(r)) + '?',
+                        onOk: () => { r.balancePaid = true; }
+                    });
+                },
+                receiveDeposit(r) {
+                    this.openConfirm({
+                        title: 'Receive security deposit?',
+                        message: 'Confirm that you received the ' + this.peso(r.deposit) + ' security deposit from ' + r.name + '?',
+                        onOk: () => { r.depositStatus = 'Held'; }
+                    });
+                },
+                refundDeposit(r) {
+                    this.openConfirm({
+                        title: 'Refund security deposit?',
+                        message: 'Confirm that the ' + this.peso(r.deposit) + ' security deposit was returned to ' + r.name + '?',
+                        onOk: () => { r.depositStatus = 'Refunded'; }
+                    });
+                },
+                depositClass(status) {
+                    return {
+                        'Unpaid':   'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400',
+                        'Held':     'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400',
+                        'Refunded': 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400'
+                    }[status] || '';
+                },
+
+                statusClass(status) {
+                    return {
+                        'Pending':   'bg-amber-50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
+                        'Confirmed': 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400',
+                        'Reserved':  'bg-sky-50 dark:bg-sky-900/30 text-sky-700 dark:text-sky-400',
+                        'Completed': 'bg-emerald-50 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400',
+                        'Cancelled': 'bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+                    }[status] || '';
+                },
+
+                async handleLogin() {
+                    try {
+                        const res = await fetch('/api/admin/login', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ username: this.loginForm.username.trim(), password: this.loginForm.password }) });
+                        const data = await res.json().catch(() => ({}));
+                        if (!res.ok) { this.loginError = data.message || 'Invalid username or password.'; return; }
+                        this.loginError = '';
+                        this.token = data.token;
+                        try { sessionStorage.setItem('adminToken', data.token); } catch (e) {}
+                        this.openConfirm({ title: 'Log in?', message: 'Sign in as ' + this.loginForm.username + '?', onOk: () => { this.isLoggedIn = true; this.loginForm.password = ''; this.loadAll(); } });
+                    } catch (err) {
+                        this.loginError = 'Cannot reach the server. Make sure app.py is running and open this page from http://127.0.0.1:5000/admin';
+                    }
+                },
+
+                logout() {
+                    this.openConfirm({ title: 'Log out?', message: 'Are you sure you want to log out?', danger: true, onOk: () => { this.forceLogout(); this.loginForm.username = ''; this.loginForm.password = ''; } });
+                },
+
+                init() {
+                    let saved = null;
+                    try { saved = localStorage.getItem('darkMode'); } catch (e) {}
+                    this.darkMode = saved !== null
+                        ? saved === 'true'
+                        : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+                    this.$watch('darkMode', (value) => {
+                        document.documentElement.classList.toggle('dark', value);
+                        try { localStorage.setItem('darkMode', value); } catch (e) {}
+                    });
+
+                    document.documentElement.classList.toggle('dark', this.darkMode);
+
+                    this.$watch('readNotifs', v => { try { localStorage.setItem('readNotifs', JSON.stringify(v)); } catch (e) {} });
+
+                    try { const t = sessionStorage.getItem('adminToken'); if (t) { this.token = t; this.isLoggedIn = true; this.loadAll(); } } catch (e) {}
+                    setInterval(() => { if (this.isLoggedIn) this.loadAll(true); }, 30000);
+                    setInterval(() => { if (this.isLoggedIn) this.loadChats(); }, 4000);   // pick up new bookings
+
+                    this.$nextTick(() => {
+                        const calendarEl = document.getElementById('calendar');
+                        if (calendarEl) {
+                            this.calendar = new FullCalendar.Calendar(calendarEl, {
+                                initialView: 'dayGridMonth',
+                                headerToolbar: {
+                                    left: 'prev,next today',
+                                    center: 'title',
+                                    right: 'dayGridMonth,timeGridWeek,multiMonthYear'
+                                },
+                                buttonText: { month: 'Month', week: 'Week', multiMonthYear: 'Year' },
+                                views: { multiMonthYear: { multiMonthMaxColumns: 3, multiMonthMinWidth: 220 } },
+                                events: [],
+                                height: 'auto', aspectRatio: 2.3, fixedWeekCount: false, dayMaxEvents: 2
+                            });
+                            this.calendar.render();
+                            this.refreshCalendar();
+                            this.$watch('reservations', () => this.refreshCalendar());
+                        }
+                    });
+                }
+            }
+        }
+    </script>
+</body>
+</html>

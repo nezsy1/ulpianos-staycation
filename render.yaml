@@ -1,0 +1,34 @@
+# Render Blueprint - New > Blueprint > pick your GitHub repo
+services:
+  - type: web
+    name: ulpianos-staycation
+    runtime: python
+    plan: free                 # change to "starter" so the site never sleeps
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app --workers 2 --threads 4 --timeout 120
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.3
+      - key: TZ
+        value: Asia/Manila
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ulpianos-db
+          property: connectionString
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: ADMIN_PASSWORD      # you type this in the Render dashboard
+        sync: false
+      - key: BREVO_API_KEY       # for emails (lobby pass). Get it free at brevo.com
+        sync: false
+      - key: MAIL_FROM           # the sender email you verified in Brevo
+        sync: false
+      - key: ADMIN_NOTIFY_EMAIL  # (optional) owner email for new booking / new chat alerts
+        sync: false
+
+databases:
+  - name: ulpianos-db
+    plan: free                 # free Postgres expires after 30 days - see DEPLOY.md

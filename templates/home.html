@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ulpiano's Staycation - Booking & Guest Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+    <style>
+        :root { --primary: #1e2a47; --primary-hover: #14203a; --dark: #0f172a; --muted: #64748b; --bg: #f8fafc; --card: #ffffff; --border: #e2e8f0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
+        body { background: url('alpina-heights.jpg') center/cover no-repeat fixed; background-color: #d9e2ec; color: var(--dark); padding-bottom: 60px; }
+
+        header { background: white; border-bottom: 1px solid var(--border); padding: 16px 24px; display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100; }
+        .logo { font-size: 18px; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px; }
+        .btn-auth { background: var(--primary); color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; border: none; cursor: pointer; transition: 0.2s; }
+        .btn-auth:hover { background: var(--primary-hover); }
+
+        .container { max-width: 100% !important; margin: 0 !important; padding: 0 !important; }
+
+        /* Landing hero (hindi pa naka-log in) */
+        .unauth-hero {
+            background: url('alpina-heights.jpg') center/cover no-repeat;
+            border-radius: 16px; padding: 120px 30px 50px; color: white; text-align: center;
+            margin-bottom: 30px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); min-height: 440px;
+            flex-direction: column; justify-content: flex-end;
+        }
+        .unauth-hero h2 { font-size: 26px; font-weight: 800; margin-bottom: 10px; color: #ffffff !important; }
+        .unauth-hero p { font-size: 14px; margin-bottom: 20px; }
+        .btn-group { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+        .btn-light { background: white; color: var(--dark); padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 13px; transition: 0.2s; }
+        .btn-light:hover { background: #f1f5f9; }
+
+        /* Main content grid */
+        .grid-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 30px; }
+        @media (max-width: 900px) { .grid-layout { grid-template-columns: 1fr; } }
+
+        .section-card { background: white; padding: 24px; border-radius: 16px; border: 1px solid var(--border); margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+        .section-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+
+        .inclusions-list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; list-style: none; }
+        .inclusions-list li { background: #f1f5f9; padding: 10px 14px; border-radius: 8px; font-size: 13.5px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+
+        .map-container iframe { width: 100%; height: 280px; border-radius: 12px; border: 0; }
+        .address-text { font-size: 14px; color: var(--muted); margin-bottom: 12px; line-height: 1.6; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">Ulpiano's Staycation</div>
+        <div id="navArea">
+            <a href="login.html" class="btn-auth">Sign In / Sign Up</a>
+        </div>
+    </header>
+
+    <div class="container">
+
+        <!-- LANDING PAGE: hindi pa naka-log in -->
+        <div id="unauthBanner" class="unauth-hero" style="display: none;">
+            <h2>The Alpina Heights Condominium - Ulpiano's Staycation</h2>
+            <p>Experience luxury, comfort, and safety in Parañaque City. Sign in or register to view photos, check available dates, and book your stay!</p>
+            <div class="btn-group">
+                <a href="login.html" class="btn-light">Sign In</a>
+                <a href="login.html" class="btn-auth" style="background: #b08d57;">Sign Up</a>
+            </div>
+        </div>
+
+        <!-- ELEGANT WELCOME BANNER (naka-log in) -->
+        <div class="welcome-banner" id="welcomeBanner" style="display: none;">
+            <div class="welcome-inner">
+                <span class="welcome-eyebrow">The Alpina Heights &bull; Parañaque City</span>
+                <h1 class="hero-title" id="welcomeTitle">Welcome to Ulpiano's Staycation</h1>
+                <div class="gold-divider"></div>
+                <p class="hero-sub" id="welcomeSub">Relax and enjoy your stay with comfortable amenities and scenic views.</p>
+            </div>
+        </div>
+
+        <!-- MAIN CONTENT (naka-log in lang) -->
+        <div class="protected-content" id="protectedContent" style="display: none;">
+            <div class="grid-layout">
+
+                <!-- Left Column -->
+                <div>
+                    <!-- Gallery -->
+                    <div class="accommodation-gallery">
+                        <div class="gallery-track">
+                            <div class="gallery-card" onclick="openLightbox('https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=1200&q=80')">
+                                <img src="https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=600&q=80" alt="Staycation 1" onerror="this.closest('.gallery-card').style.display='none'">
+                            </div>
+                            <div class="gallery-card" onclick="openLightbox('https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1200&q=80')">
+                                <img src="https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=600&q=80" alt="Staycation 2" onerror="this.closest('.gallery-card').style.display='none'">
+                            </div>
+                            <div class="gallery-card" onclick="openLightbox('https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=1200&q=80')">
+                                <img src="https://images.unsplash.com/photo-1584622650111-993a426fbf0a?auto=format&fit=crop&w=600&q=80" alt="Staycation 3" onerror="this.closest('.gallery-card').style.display='none'">
+                            </div>
+                            <div class="gallery-card" onclick="openLightbox('https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=1200&q=80')">
+                                <img src="https://images.unsplash.com/photo-1507089947368-19c1da9775ae?auto=format&fit=crop&w=600&q=80" alt="Staycation 4" onerror="this.closest('.gallery-card').style.display='none'">
+                            </div>
+                            <div class="gallery-card" onclick="openLightbox('https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=80')">
+                                <img src="https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=600&q=80" alt="Staycation 5" onerror="this.closest('.gallery-card').style.display='none'">
+                            </div>
+                            <div class="gallery-card" onclick="openLightbox('https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1200&q=80')">
+                                <img src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80" alt="Staycation 6" onerror="this.closest('.gallery-card').style.display='none'">
+                            </div>
+                            <div class="gallery-card" onclick="openLightbox('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=80')">
+                                <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=600&q=80" alt="Staycation 7" onerror="this.closest('.gallery-card').style.display='none'">
+                            </div>
+                            <div class="gallery-card" onclick="openLightbox('https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=1200&q=80')">
+                                <img src="https://images.unsplash.com/photo-1600566753376-12c8ab7fb75b?auto=format&fit=crop&w=600&q=80" alt="Staycation 8" onerror="this.closest('.gallery-card').style.display='none'">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lightbox -->
+                    <div id="imageLightbox" class="lightbox-overlay">
+                        <span class="lightbox-close" onclick="closeLightbox()">&times;</span>
+                        <img class="lightbox-img" id="lightboxImage" src="" alt="Zoomed View">
+                    </div>
+
+                    <!-- Rates & House Rules -->
+                    <div class="card" style="margin-top: 20px;">
+                        <h3 class="rates-heading" style="font-weight: 700; margin-bottom: 12px;">Rates & House Rules</h3>
+                        <div class="rates-body">
+                            <p style="margin: 5px 0;">💰 <b>Unit Rates:</b> ₱2,500 per 22-hour stay, good for 2 pax. Maximum of 4 pax, with a ₱500 extra fee per head for additional guests.</p>
+                            <p class="rules-note" style="margin: 5px 0;">⚠️ <b>Note:</b> No smoking, no pets allowed.</p>
+                        </div>
+                    </div>
+
+                    <!-- Inclusions -->
+                    <div class="section-card">
+                        <h2 class="section-title">✨ Unit Inclusions & Amenities</h2>
+                        <ul class="inclusions-list">
+                            <li>📶 High-Speed WiFi (Up to 200 Mbps)</li>
+                            <li>❄️ Air-Conditioned Suite</li>
+                            <li>📺 55" Smart TV with Netflix</li>
+                            <li>🏊 Swimming Pool Access</li>
+                            <li>🍳 Fully-Equipped Kitchenette</li>
+                            <li>🚿 Hot & Cold Shower</li>
+                            <li>☕ Complimentary Coffee & Water</li>
+                            <li>🔒 24/7 Security & Keyless Entry</li>
+                        </ul>
+                    </div>
+
+                    <!-- Address & Map -->
+                    <div class="section-card">
+                        <h2 class="section-title">📍 Address & Directions</h2>
+                        <p class="address-text">
+                            <b>Address:</b> Alpina Heights Condominium, Champaca, UPS VI, Parañaque, 1700 Metro Manila
+                        </p>
+                        <div class="map-container">
+                            <iframe
+                                src="https://www.google.com/maps?q=Alpina+Heights+Condominium+Champaca+UPS+VI+Para%C3%B1aque+1700+Metro+Manila&output=embed"
+                                title="Alpina Heights Condominium map"
+                                allowfullscreen=""
+                                loading="lazy"
+                                referrerpolicy="no-referrer-when-downgrade">
+                            </iframe>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: Booking -->
+                <div>
+                    <div class="section-card" style="position: sticky; top: 90px;">
+                        <h2 class="section-title">📅 Check Available Dates</h2>
+
+                        <div style="margin-bottom: 12px;">
+                            <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 6px;">Check-In Date</label>
+                            <input type="text" id="checkInDate" placeholder="Select check-in date" class="date-input">
+                        </div>
+
+                        <div style="margin-bottom: 16px;">
+                            <label style="font-size: 12px; font-weight: 700; display: block; margin-bottom: 6px;">Check-Out Date</label>
+                            <input type="text" id="checkOutDate" placeholder="Select check-out date" class="date-input">
+                        </div>
+                        <p style="font-size: 11.5px; color: var(--muted); margin-bottom: 15px; font-style: italic;">
+                            💡 Note: Rate is ₱1,000.00 per 22-hour booking (deducted from total staycation payment).
+                        </p>
+                        <div class="fee-box">
+                            <div class="fee-row">
+                                <span>Reservation Fee:</span>
+                                <b id="feeDisplay">₱1,000.00</b>
+                            </div>
+                        </div>
+                        <button onclick="handleReservation()" class="btn-auth" style="width: 100%; padding: 12px; font-size: 14px;">Proceed to Reservation</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+<script src="ui.js"></script>
+<script src="shared.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/plugins/rangePlugin.js"></script> 
+
+<script>
+function openLightbox(imageSrc) {
+    document.getElementById('lightboxImage').src = imageSrc;
+    document.getElementById('imageLightbox').classList.add('active');
+}
+function closeLightbox() {
+    document.getElementById('imageLightbox').classList.remove('active');
+}
+window.addEventListener('click', function(e) {
+    const lightbox = document.getElementById('imageLightbox');
+    if (e.target === lightbox) closeLightbox();
+});
+
+function logout() {
+    if (!confirm("Are you sure you want to log out?")) return;
+    localStorage.removeItem('currentUser');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('isLoggedIn');
+    alert("Logged out successfully.");
+    window.location.href = "home.html";
+}
+
+function toggleChat() {
+    const box = document.getElementById('chatBox');
+    box.style.display = box.style.display === 'flex' ? 'none' : 'flex';
+    if (box.style.display === 'flex') {
+        const i = document.getElementById('chatInput');
+        if (i) i.focus();
+    }
+}
+
+function appendMessage(sender, text) {
+    const messages = document.getElementById('chatMessages');
+    const msgDiv = document.createElement('div');
+    msgDiv.className = 'chat-msg ' + (sender === 'user' ? 'user' : 'bot');
+    msgDiv.innerHTML = text;
+    messages.appendChild(msgDiv);
+    messages.scrollTop = messages.scrollHeight;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('chatInput');
+    if (input) input.addEventListener('keydown', e => { if (e.key === 'Enter') sendMessage(); });
+});
+
+function sendFAQ(type) {
+    if (type === 'checkin') {
+        appendMessage('user', '🕒 What is the check-in and check-out time?');
+        setTimeout(() => {
+            appendMessage('bot', 'Standard Check-in is at 2:00 PM and Check-out is at 12:00 NN the next day. <b>Note:</b> Please arrive at least 30 minutes before your booked time.');
+        }, 500);
+    } else if (type === 'rates') {
+        appendMessage('user', '💰 How much is the reservation fee?');
+        setTimeout(() => {
+            appendMessage('bot', 'The Reservation Fee is <b>₱1,000.00 per 22-hour booking</b> as shown in your booking panel on the right. This will be deducted from your total staycation payment.');
+        }, 500);
+    } else if (type === 'terms') {
+        appendMessage('user', '📋 Terms & Conditions?');
+        setTimeout(() => {
+            appendMessage('bot', '<b>Staycation Terms & Conditions:</b><br>' +
+                '1. <b>Rate & Capacity:</b> ₱2,500 per 22-hour stay, good for 2 pax. Maximum of 4 pax, with a ₱500 extra fee per head for additional guests.<br>' +
+                '2. <b>Arrival:</b> Please arrive at least 30 minutes before your booked time.<br>' +
+                '3. <b>Check-in & Payments:</b> Upon arrival, sign the contract, settle the remaining balance (less reservation fee), and pay the ₱1,000 security deposit.<br>' +
+                '4. <b>Refundable Deposit:</b> The ₱1,000 security deposit is fully refundable upon check-out if there are no damages.<br>' +
+                '5. <b>House Rules:</b> Strictly NO SMOKING and NO PETS allowed inside the suite.<br>' +
+                '6. <b>Valid ID:</b> All guests must present a government ID upon check-in.');
+        }, 500);
+    }
+}
+
+function connectLiveAgent() {
+    appendMessage('user', '👤 I want to speak with a Live Agent / Admin.');
+    setTimeout(() => {
+        appendMessage('bot', 'The Admin (Owner) has been notified. Please wait a moment while they review your message. You can also check real-time availability in the reservation calendar.');
+    }, 600);
+}
+
+function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if (!text) return;
+
+    appendMessage('user', text);
+    input.value = '';
+
+    setTimeout(() => {
+        const lower = text.toLowerCase();
+
+        if (lower.includes('parking') || lower.includes('park')) {
+            appendMessage('bot', 'Yes, we do have parking available for our guests!');
+        }
+        else if (lower.includes('term') || lower.includes('condition') || lower.includes('policy') || lower.includes('rule') || lower.includes('contract') || lower.includes('deposit')) {
+            appendMessage('bot', '<b>Staycation Terms & Conditions:</b><br>' +
+                '1. <b>Reservation Fee:</b> A non-refundable reservation fee of ₱1,000 is required to lock in your dates (this will be <b>deducted from your total full payment</b>).<br>' +
+                '2. <b>Arrival Time:</b> Please arrive at least <b>30 minutes before your booked time</b>.<br>' +
+                '3. <b>Check-in & Payments:</b> Upon arrival, guests must sign the staycation contract, settle the remaining balance of the full payment, and pay a <b>₱1,000 security deposit</b>.<br>' +
+                '4. <b>Refundable Deposit:</b> The ₱1,000 security deposit is fully refundable upon check-out if there are no damages or missing items.<br>' +
+                '5. <b>No Smoking & Pets:</b> Strictly NO SMOKING and NO PETS allowed inside the suite.<br>' +
+                '6. <b>Valid ID:</b> All guests must present a government ID upon check-in.');
+        }
+        else if (lower.includes('payment') || lower.includes('balance') || lower.includes('deduct')) {
+            appendMessage('bot', 'Your ₱1,000 reservation fee will be <b>deducted from your total full payment</b> upon check-in. You will only pay the remaining balance along with the ₱1,000 refundable security deposit.');
+        }
+        else {
+            appendMessage('bot', 'Thank you for your message. I have forwarded this to our Live Agent (Admin) for assistance.');
+        }
+    }, 600);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    checkAuthStatus();
+});
+
+function esc(t) {
+    return String(t == null ? '' : t).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function checkAuthStatus() {
+    let user = null;
+    try { user = JSON.parse(localStorage.getItem('currentUser')); } catch (e) {}
+    const navArea = document.getElementById('navArea');
+    const unauthBanner = document.getElementById('unauthBanner');
+    const protectedContent = document.getElementById('protectedContent');
+    const welcomeBanner = document.getElementById('welcomeBanner');
+    const chatbotWrapper = document.getElementById('chatbotWrapper');
+    const initial = (user && user.name ? String(user.name).trim().charAt(0) : 'G').toUpperCase();
+
+    if (user && user.isLoggedIn) {
+        if (unauthBanner) unauthBanner.style.display = 'none';
+        if (protectedContent) protectedContent.style.display = 'block';
+        if (welcomeBanner) welcomeBanner.style.display = 'block';
+        if (chatbotWrapper) chatbotWrapper.style.display = 'block';
+
+        navArea.innerHTML = `
+            <div class="user-profile-menu">
+                <button class="profile-trigger" id="profileTrigger" onclick="toggleProfileDropdown()">
+                    <span class="profile-avatar">${esc(initial)}</span>
+                    <span class="profile-name">${esc(user.name)}</span>
+                    <svg class="profile-chevron" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                </button>
+
+                <div id="profileDropdown" class="profile-dropdown-content">
+                    <div class="dropdown-header">
+                        <span class="profile-avatar lg">${esc(initial)}</span>
+                        <div>
+                            <small>Signed in as</small>
+                            <div class="dd-name">${esc(user.name)}</div>
+                        </div>
+                    </div>
+
+                    <a href="javascript:void(0);" onclick="openAccountModal()"><svg class="dd-ico" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Account Info</a>
+
+                    <div class="dropdown-item">
+                        <span><svg class="dd-ico" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg> Dark Mode</span>
+                        <input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode()">
+                    </div>
+
+                    <hr>
+                    <button class="dd-logout" onclick="logout()"><svg class="dd-ico" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Log Out</button>
+                </div>
+            </div>
+        `;
+    } else {
+        if (unauthBanner) unauthBanner.style.display = 'flex';
+        if (protectedContent) protectedContent.style.display = 'none';
+        if (welcomeBanner) welcomeBanner.style.display = 'none';
+        if (chatbotWrapper) chatbotWrapper.style.display = 'none';
+
+        navArea.innerHTML = `<a href="login.html" class="btn-auth">Sign In / Sign Up</a>`;
+    }
+}
+
+function toggleProfileDropdown() {
+    const dropdown = document.getElementById('profileDropdown');
+    const trigger = document.getElementById('profileTrigger');
+    if (dropdown) {
+        const open = dropdown.style.display === 'block';
+        dropdown.style.display = open ? 'none' : 'block';
+        if (trigger) trigger.classList.toggle('open', !open);
+    }
+}
+
+window.addEventListener('click', function(e) {
+    const menuContainer = document.querySelector('.user-profile-menu');
+    const dropdown = document.getElementById('profileDropdown');
+    if (menuContainer && dropdown && !menuContainer.contains(e.target)) {
+        dropdown.style.display = 'none';
+        const trigger = document.getElementById('profileTrigger');
+        if (trigger) trigger.classList.remove('open');
+    }
+});
+
+function toggleDarkMode() {
+    const t = document.getElementById('darkModeToggle');
+    const isDark = t ? t.checked : false;
+    document.body.classList.toggle('dark-mode', isDark);
+    localStorage.setItem('theme', isDark ? 'dark' : 'light');
+}
+
+window.addEventListener('DOMContentLoaded', () => {
+    const isDark = localStorage.getItem('theme') === 'dark';
+    document.body.classList.toggle('dark-mode', isDark);
+    const t = document.getElementById('darkModeToggle');
+    if (t) t.checked = isDark;
+});
+
+// Date pickers
+document.addEventListener("DOMContentLoaded", function() {
+    const checkInPicker = flatpickr("#checkInDate", {
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        onChange: function(selectedDates, dateStr, instance) {
+            if (dateStr) {
+                const nextDay = new Date(selectedDates[0]);
+                nextDay.setDate(nextDay.getDate() + 1);
+                checkOutPicker.set("minDate", nextDay);
+
+                const currentCheckOut = document.getElementById("checkOutDate").value;
+                if (currentCheckOut && currentCheckOut <= dateStr) {
+                    checkOutPicker.clear();
+                    document.getElementById("feeDisplay").innerText = "₱1,000.00";
+                } else {
+                    updateFee();
+                }
+                instance.close();
+            }
+        }
+    });
+
+    const checkOutPicker = flatpickr("#checkOutDate", {
+        dateFormat: "Y-m-d",
+        minDate: "today",
+        onChange: function(selectedDates, dateStr, instance) {
+            if (dateStr) {
+                updateFee();
+                instance.close();
+            }
+        }
+    });
+});
+
+function updateFee() {
+    const checkInVal = document.getElementById("checkInDate").value;
+    const checkOutVal = document.getElementById("checkOutDate").value;
+
+    if (checkInVal && checkOutVal) {
+        const diffTime = Math.abs(new Date(checkOutVal) - new Date(checkInVal));
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const totalFee = diffDays * 1000;
+        document.getElementById("feeDisplay").innerText = `₱${totalFee.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+    }
+}
+
+function handleReservation() {
+    const checkIn = document.getElementById("checkInDate").value;
+    const checkOut = document.getElementById("checkOutDate").value;
+
+    if (!checkIn || !checkOut) {
+        alert("Please select both Check-In and Check-Out dates.");
+        return;
+    }
+
+    localStorage.setItem('selectedCheckIn', checkIn);
+    localStorage.setItem('selectedCheckOut', checkOut);
+
+    const feeText = document.getElementById("feeDisplay").innerText;
+    const isConfirmed = confirm(`Do you want to proceed with the reservation?\n\nCheck-In: ${checkIn}\nCheck-Out: ${checkOut}\nTotal Fee: ${feeText}`);
+
+    if (isConfirmed) {
+        window.location.href = `index.html?checkIn=${encodeURIComponent(checkIn)}&checkOut=${encodeURIComponent(checkOut)}`;
+    }
+}
+
+// Account modal
+function openAccountModal() {
+    const modal = document.getElementById('accountModal');
+    const savedName = localStorage.getItem('userName') || localStorage.getItem('loggedInName') || "Guest";
+    const savedEmail = localStorage.getItem('userEmail') || localStorage.getItem('loggedInEmail') || "";
+
+    const nameElement = document.getElementById('modalUserName');
+    const emailElement = document.getElementById('modalUserEmail');
+    if (nameElement) nameElement.innerText = savedName;
+    if (emailElement) emailElement.innerText = savedEmail;
+    const avatarEl = document.getElementById('modalAvatar');
+    if (avatarEl) avatarEl.innerText = (savedName.trim().charAt(0) || 'G').toUpperCase();
+    if (modal) modal.classList.add('active');
+}
+
+function closeAccountModal() {
+    const modal = document.getElementById('accountModal');
+    if (modal) modal.classList.remove('active');
+}
+
+function confirmDeleteAccount() {
+    const userEmailElement = document.getElementById('modalUserEmail');
+    const registeredEmail = userEmailElement ? userEmailElement.innerText.trim() : (localStorage.getItem('userEmail') || "");
+
+    const confirmationInput = prompt("To confirm deletion, please re-type your registered email address (" + registeredEmail + "):");
+    if (confirmationInput === null) return;
+
+    if (confirmationInput.trim().toLowerCase() === registeredEmail.toLowerCase()) {
+        localStorage.removeItem('currentUser');
+        localStorage.removeItem('userEmail');
+        localStorage.removeItem('userName');
+        localStorage.removeItem('isLoggedIn');
+
+        alert("Email verified. Your account has been successfully deleted.");
+        window.location.href = "home.html";
+    } else {
+        alert("Incorrect email address! Account deletion cancelled.");
+    }
+}
+
+window.addEventListener('click', function(e) {
+    const modal = document.getElementById('accountModal');
+    if (e.target === modal) closeAccountModal();
+});
+</script>
+
+<script src="home-connect.js"></script>
+
+<!-- Chatbot -->
+<div id="chatbotWrapper" style="display: none;">
+    <div id="chatWidgetContainer">
+
+        <button id="chatToggleBtn" class="chat-fab" onclick="toggleChat()" aria-label="Open chat">
+            <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.5 8.5 0 0 1-3.8-.9L3 21l1.9-5.2A8.4 8.4 0 0 1 3 11.5 8.5 8.5 0 0 1 12 3a8.5 8.5 0 0 1 9 8.5z"/></svg>
+            <span class="chat-fab-dot"></span>
+        </button>
+
+        <div id="chatBox" class="chat-window" style="display: none;">
+
+            <div class="chat-header">
+                <div class="chat-avatar">U</div>
+                <div>
+                    <h4 class="chat-title">Ulpiano's Concierge</h4>
+                    <div class="chat-status">Online &bull; Replies instantly</div>
+                </div>
+                <button class="chat-close" onclick="toggleChat()" aria-label="Close chat">&times;</button>
+            </div>
+
+            <div id="chatMessages" class="chat-messages">
+                <div class="chat-msg bot">Good day! Welcome to Ulpiano's Staycation. How may I assist you today?</div>
+            </div>
+
+            <div class="chat-chips">
+                <button class="chat-chip" onclick="sendFAQ('checkin')">🕒 Check-in &amp; Check-out</button>
+                <button class="chat-chip" onclick="sendFAQ('rates')">💰 Reservation Fee</button>
+                <button class="chat-chip" onclick="sendFAQ('terms')">📋 Terms &amp; Conditions</button>
+                <button class="chat-chip agent" onclick="connectLiveAgent()">👤 Live Agent</button>
+            </div>
+
+            <div class="chat-input-row">
+                <input type="text" id="chatInput" placeholder="Type your message...">
+                <button class="chat-send" onclick="sendMessage()" aria-label="Send">
+                    <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Account Info Modal -->
+<div id="accountModal" class="profile-modal-overlay">
+    <div class="profile-modal-card">
+        <div class="profile-modal-header">
+            <h3>Account Information</h3>
+            <span class="profile-close-btn" onclick="closeAccountModal()">&times;</span>
+        </div>
+        <div class="profile-modal-body">
+            <div class="account-avatar-wrap">
+                <div class="profile-avatar xl" id="modalAvatar">G</div>
+                <span class="account-badge">Valued Guest</span>
+            </div>
+            <div class="profile-info-group">
+                <label>Full Name</label>
+                <p id="modalUserName"></p>
+            </div>
+            <div class="profile-info-group">
+                <label>Email Address</label>
+                <p id="modalUserEmail"></p>
+            </div>
+        </div>
+        <div class="profile-modal-footer">
+            <a href="home.html" class="profile-btn-home">Go to Homepage</a>
+            <button class="profile-btn-delete" onclick="confirmDeleteAccount()">Delete Account</button>
+        </div>
+    </div>
+</div>
+
+<style>
+
+    /* 2. Profile dropdown */
+    .user-profile-menu { position: relative; display: inline-block; }
+    .profile-trigger { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 6px 14px; border-radius: 30px; cursor: pointer; font-weight: 600; color: #1e293b; display: flex; align-items: center; gap: 8px; font-size: 14px; }
+    .profile-dropdown-content { display: none; position: absolute; right: 0; top: 42px; background: white; min-width: 220px; box-shadow: 0 10px 25px rgba(0,0,0,0.15); border-radius: 12px; border: 1px solid #e2e8f0; z-index: 1000; overflow: hidden; }
+    .profile-dropdown-content div.dropdown-header { padding: 12px 15px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; }
+    .profile-dropdown-content a, .profile-dropdown-content button, .profile-dropdown-content .dropdown-item { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 10px 15px; text-align: left; background: none; border: none; font-size: 13px; color: #334155; cursor: pointer; text-decoration: none; }
+    .profile-dropdown-content a:hover, .profile-dropdown-content button:hover { background-color: #f1f5f9; color: #166534; }
+    .profile-dropdown-content hr { margin: 0; border: none; border-top: 1px solid #e2e8f0; }
+
+    /* 3. Dark mode */
+    :root { --bg-color: #ffffff; --text-color: #0f172a; --card-bg: #ffffff; --card-border: #e2e8f0; --muted-text: #64748b; --input-bg: #f8fafc; }
+    
+    body { background-color: var(--bg-color) !important; color: var(--text-color) !important; transition: background-color 0.3s ease, color 0.3s ease; }
+    div, section, article, .card { background-color: inherit; }
+
+    
+
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+
+    
+    
+    
+    
+    
+    
+    
+    
+
+    .rates-heading { color: #111827 !important; }
+    
+
+    /* Profile modal */
+    .profile-modal-overlay { display: none; position: fixed; z-index: 10000; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.6); backdrop-filter: blur(4px); justify-content: center; align-items: center; }
+    .profile-modal-overlay.active { display: flex; }
+    .profile-modal-card { background-color: var(--card, #ffffff); color: var(--dark, #0f172a); width: 100%; max-width: 400px; border-radius: 12px; border: 1px solid var(--border, #e2e8f0); box-shadow: 0 10px 25px rgba(0,0,0,0.3); overflow: hidden; animation: modalFadeIn 0.25s ease; }
+    @keyframes modalFadeIn { from { opacity: 0; transform: translateY(-15px); } to { opacity: 1; transform: translateY(0); } }
+    .profile-modal-header { padding: 18px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border, #e2e8f0); }
+    .profile-modal-header h3 { margin: 0; font-size: 18px; }
+    .profile-close-btn { font-size: 24px; cursor: pointer; color: var(--muted, #64748b); transition: color 0.2s; }
+    .profile-close-btn:hover { color: var(--dark, #0f172a); }
+    .profile-modal-body { padding: 20px; }
+    .profile-info-group { margin-bottom: 15px; }
+    .profile-info-group label { font-size: 13px; color: var(--muted, #64748b); display: block; margin-bottom: 4px; }
+    .profile-modal-footer { padding: 15px 20px; background-color: var(--input-bg, #f8fafc); border-top: 1px solid var(--border, #e2e8f0); display: flex; gap: 10px; flex-direction: column; }
+    .profile-btn-home { background-color: var(--primary, #4f46e5); color: white; text-align: center; padding: 10px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; transition: opacity 0.2s; }
+    .profile-btn-home:hover { opacity: 0.9; }
+    .profile-btn-delete { background-color: #ef4444; color: white; border: none; text-align: center; padding: 10px; border-radius: 8px; font-weight: 600; font-size: 14px; cursor: pointer; transition: opacity 0.2s; }
+    .profile-btn-delete:hover { opacity: 0.9; }
+
+    /* Gallery */
+    .accommodation-gallery { width: 100%; margin-top: 12px; }
+    .gallery-track { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .gallery-card { border-radius: 12px; overflow: hidden; cursor: pointer; aspect-ratio: 16/10; background: #161b22; border: 1px solid var(--border, #e2e8f0); box-shadow: 0 4px 12px rgba(0,0,0,0.05); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .gallery-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
+    .gallery-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    @media (max-width: 768px) {
+        .accommodation-gallery { overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding-bottom: 12px; scrollbar-width: thin; }
+        .gallery-track { display: flex; gap: 12px; width: max-content; }
+        .gallery-card { flex: 0 0 280px; scroll-snap-align: start; }
+    }
+
+    /* Lightbox */
+    .lightbox-overlay { display: none; position: fixed; z-index: 99999; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); justify-content: center; align-items: center; padding: 20px; backdrop-filter: blur(5px); }
+    .lightbox-overlay.active { display: flex; }
+    .lightbox-img { max-width: 90%; max-height: 85vh; border-radius: 10px; object-fit: contain; box-shadow: 0 10px 30px rgba(0,0,0,0.5); animation: zoomIn 0.2s ease; }
+    @keyframes zoomIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .lightbox-close { position: absolute; top: 25px; right: 35px; color: #ffffff; font-size: 42px; font-weight: 300; cursor: pointer; transition: color 0.2s; line-height: 1; }
+    .lightbox-close:hover { color: #ef4444; }
+</style>
+
+<style>
+/* =========================================
+   ELEGANT THEME
+   ========================================= */
+.container, .protected-content, .grid-layout, .grid-layout > div,
+.accommodation-gallery, .gallery-track, .btn-group { background-color: transparent !important; }
+
+header { background: #ffffff; border-bottom: 1px solid #e7dcc6; box-shadow: 0 2px 14px rgba(15,23,42,0.08); padding: 18px 32px; }
+.logo { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: #1e2a47; }
+h1, h2, h3, h4 { font-family: 'Playfair Display', serif; letter-spacing: 0.3px; }
+
+/* Aligned content na may tamang margin sa gilid */
+.protected-content { max-width: 1200px; margin: 0 auto !important; padding: 10px 24px 40px !important; }
+
+/* Elegant welcome banner */
+.welcome-banner { max-width: 1200px; margin: 28px auto 8px; padding: 0 24px; }
+.welcome-inner {
+    text-align: center;
+    padding: 42px 24px 38px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, rgba(15,23,42,0.88), rgba(30,42,71,0.80));
+    border: 1px solid rgba(201,169,110,0.5);
+    box-shadow: 0 14px 40px rgba(15,23,42,0.35);
+    backdrop-filter: blur(6px);
+}
+.welcome-eyebrow { display: block; color: #c9a96e; font-size: 11px; font-weight: 600; letter-spacing: 4px; text-transform: uppercase; }
+.hero-title { color: #ffffff; font-size: 40px; font-weight: 600; letter-spacing: 1px; margin: 12px 0 0; text-shadow: none; }
+.gold-divider { width: 80px; height: 2px; margin: 18px auto; background: linear-gradient(90deg, transparent, #c9a96e, transparent); }
+.hero-sub { color: #e2e8f0; font-size: 15px; font-weight: 400; letter-spacing: 0.6px; margin: 0; text-shadow: none; }
+
+.section-card, .card { background-color: rgba(255,255,255,0.96) !important; border: 1px solid #ece4d3; border-radius: 16px; box-shadow: 0 8px 28px rgba(15,23,42,0.12); }
+.card { padding: 22px; }
+.section-title { font-weight: 600; font-size: 20px; }
+
+
+.btn-auth, .btn-light { letter-spacing: 0.6px; }
+
+/* Landing hero */
+.unauth-hero {
+    background: url('https://i.pinimg.com/originals/24/1c/bd/241cbd175dd0eaa04fa2c123cb0181f1.jpg') center/cover no-repeat !important;
+    border-radius: 0 !important; box-shadow: none !important; width: 100% !important;
+    min-height: calc(100vh - 73px) !important; margin: 0 !important; padding: 120px 20px 60px !important;
+    display: flex; flex-direction: column; justify-content: flex-end;
+}
+.unauth-hero h2 { font-family: 'Playfair Display', serif; font-size: 40px; font-weight: 600; letter-spacing: 0.5px; color: #ffffff !important; }
+.unauth-hero p { font-size: 15px; font-weight: 500; max-width: 640px; margin: 0 auto 26px; }
+.unauth-hero h2, .unauth-hero p { text-shadow: 0 2px 12px rgba(0,0,0,0.9), 0 0 4px rgba(0,0,0,0.5); }
+.unauth-hero .btn-light, .unauth-hero .btn-auth { padding: 12px 30px; font-size: 12.5px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase; border-radius: 4px; }
+
+@media (max-width: 600px) {
+    .unauth-hero h2 { font-size: 28px; }
+    .hero-title { font-size: 26px; }
+    .welcome-inner { padding: 30px 16px; }
+    .protected-content, .welcome-banner { padding-left: 14px !important; padding-right: 14px !important; }
+    .logo { font-size: 16px; letter-spacing: 1px; }
+    header { padding: 14px 16px; }
+}
+</style>
+<style>
+/* =========================================
+   ELEGANT CHATBOT
+   ========================================= */
+#chatWidgetContainer { position: fixed; bottom: 24px; right: 24px; z-index: 1000; }
+.chat-fab { position: relative; width: 62px; height: 62px; border-radius: 50%; border: 1.5px solid #c9a96e; background: linear-gradient(135deg, #1e2a47, #0f172a); cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 28px rgba(15,23,42,0.45); transition: transform 0.2s, box-shadow 0.2s; }
+.chat-fab:hover { transform: translateY(-2px) scale(1.05); box-shadow: 0 14px 34px rgba(15,23,42,0.55); }
+.chat-fab svg { width: 26px; height: 26px; stroke: #c9a96e; fill: none; stroke-width: 1.8; }
+.chat-fab-dot { position: absolute; top: 3px; right: 3px; width: 13px; height: 13px; border-radius: 50%; background: #22c55e; border: 2px solid #0f172a; }
+
+.chat-window { display: none; flex-direction: column; position: absolute; bottom: 78px; right: 0; width: 370px; max-width: calc(100vw - 32px); background: #fffdf8; border: 1px solid #e7dcc6; border-radius: 20px; overflow: hidden; box-shadow: 0 24px 60px rgba(15,23,42,0.35); animation: chatPop 0.25s ease; }
+@keyframes chatPop { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: none; } }
+
+.chat-header { display: flex; align-items: center; gap: 12px; padding: 16px 18px; background: linear-gradient(135deg, #0f172a, #1e2a47); border-bottom: 2px solid #c9a96e; color: #fff; }
+.chat-avatar { width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #c9a96e; background: rgba(201,169,110,0.12); display: flex; align-items: center; justify-content: center; font-family: 'Playfair Display', serif; font-weight: 600; font-size: 18px; color: #c9a96e; flex-shrink: 0; }
+.chat-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600; letter-spacing: 0.5px; color: #ffffff; margin: 0; }
+.chat-status { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #cbd5e1; letter-spacing: 0.4px; margin-top: 3px; }
+.chat-status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #22c55e; }
+.chat-close { margin-left: auto; background: none; border: none; color: #cbd5e1; font-size: 26px; cursor: pointer; line-height: 1; padding: 2px 6px; transition: color 0.2s; }
+.chat-close:hover { color: #c9a96e; }
+
+.chat-messages { height: 270px; padding: 18px 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #faf7f0; }
+.chat-msg { padding: 10px 14px; max-width: 86%; line-height: 1.55; font-size: 13px; border-radius: 16px; word-wrap: break-word; animation: chatPop 0.2s ease; }
+.chat-msg.bot { background: #ffffff; color: #1e293b; border: 1px solid #ece4d3; border-top-left-radius: 4px; align-self: flex-start; box-shadow: 0 2px 6px rgba(15,23,42,0.05); }
+.chat-msg.user { background: linear-gradient(135deg, #1e2a47, #14203a); color: #ffffff; border-top-right-radius: 4px; align-self: flex-end; }
+
+.chat-chips { display: flex; flex-wrap: wrap; gap: 6px; padding: 10px 14px; background: #fffdf8; border-top: 1px solid #efe7d6; }
+.chat-chip { font-size: 11px; font-weight: 500; color: #1e2a47; background: #fffdf8; border: 1px solid #d9c9a3; padding: 6px 12px; border-radius: 999px; cursor: pointer; transition: 0.2s; }
+.chat-chip:hover { background: #1e2a47; color: #ffffff; border-color: #1e2a47; }
+.chat-chip.agent { background: #c9a96e; border-color: #c9a96e; color: #0f172a; font-weight: 700; }
+.chat-chip.agent:hover { background: #b08d57; border-color: #b08d57; color: #ffffff; }
+
+.chat-input-row { display: flex; gap: 8px; align-items: center; padding: 12px 14px; background: #fffdf8; border-top: 1px solid #efe7d6; }
+.chat-input-row input { flex: 1; padding: 10px 16px; border: 1px solid #e0d6bf; border-radius: 999px; font-size: 13px; outline: none; background: #ffffff; color: #0f172a; }
+.chat-input-row input:focus { border-color: #c9a96e; box-shadow: 0 0 0 3px rgba(201,169,110,0.22); }
+.chat-send { width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer; background: linear-gradient(135deg, #1e2a47, #0f172a); display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: 0.2s; }
+.chat-send:hover { transform: scale(1.08); }
+.chat-send svg { width: 17px; height: 17px; stroke: #c9a96e; fill: none; stroke-width: 2; }
+
+/* Dark mode */
+
+
+
+
+
+
+
+
+@media screen and (max-width: 480px) {
+    #chatWidgetContainer { right: 14px; bottom: 14px; }
+    .chat-window { width: calc(100vw - 28px); bottom: 74px; }
+    .chat-fab { width: 56px; height: 56px; }
+}
+</style>
+<style>
+/* =========================================
+   ELEGANT PROFILE MENU + ACCOUNT MODAL
+   ========================================= */
+.user-profile-menu { position: relative; display: inline-block; }
+.profile-trigger { display: flex; align-items: center; gap: 10px; padding: 5px 14px 5px 6px; background: #ffffff; border: 1px solid #d9c9a3; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 13px; color: #1e2a47; box-shadow: 0 2px 8px rgba(15,23,42,0.06); transition: 0.2s; }
+.profile-trigger:hover { border-color: #c9a96e; box-shadow: 0 4px 14px rgba(201,169,110,0.28); }
+.profile-avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, #1e2a47, #0f172a); border: 1.5px solid #c9a96e; color: #c9a96e; font-family: 'Playfair Display', serif; font-weight: 600; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.profile-avatar.lg { width: 44px; height: 44px; font-size: 19px; }
+.profile-avatar.xl { width: 78px; height: 78px; font-size: 32px; border-width: 2px; box-shadow: 0 8px 22px rgba(15,23,42,0.3); }
+.profile-chevron { width: 14px; height: 14px; stroke: #c9a96e; fill: none; stroke-width: 2.4; transition: transform 0.2s; }
+.profile-trigger.open .profile-chevron { transform: rotate(180deg); }
+
+.profile-dropdown-content { top: 54px; min-width: 270px; border-radius: 16px; border: 1px solid #e7dcc6; background: #fffdf8; box-shadow: 0 20px 50px rgba(15,23,42,0.28); animation: chatPop 0.2s ease; }
+.profile-dropdown-content div.dropdown-header { display: flex; align-items: center; gap: 12px; padding: 16px 18px; background: linear-gradient(135deg, #0f172a, #1e2a47); border-bottom: 2px solid #c9a96e; }
+.profile-dropdown-content .dropdown-header small { color: #c9a96e !important; letter-spacing: 2px; font-size: 9.5px; text-transform: uppercase; font-weight: 600; }
+.profile-dropdown-content .dd-name { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600; color: #ffffff !important; margin-top: 2px; }
+.profile-dropdown-content a, .profile-dropdown-content button, .profile-dropdown-content .dropdown-item { padding: 13px 18px; font-size: 13px; font-weight: 500; color: #1e2a47; gap: 10px; justify-content: flex-start; }
+.profile-dropdown-content .dropdown-item { justify-content: space-between; }
+.profile-dropdown-content .dropdown-item > span { display: flex; align-items: center; gap: 10px; }
+.profile-dropdown-content a:hover, .profile-dropdown-content button:hover { background-color: #faf3e3; color: #1e2a47; }
+.profile-dropdown-content hr { border-top: 1px solid #efe7d6; }
+.dd-ico { width: 18px; text-align: center; }
+.profile-dropdown-content button.dd-logout { color: #b91c1c; font-weight: 600; }
+.profile-dropdown-content button.dd-logout:hover { background-color: #fef2f2; color: #991b1b; }
+
+/* Dark mode switch */
+.dropdown-item input[type="checkbox"] { -webkit-appearance: none; appearance: none; width: 40px; height: 22px; border-radius: 999px; background: #d6dbe4; position: relative; cursor: pointer; transition: 0.2s; border: none; flex-shrink: 0; padding: 0; }
+.dropdown-item input[type="checkbox"]::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #ffffff; box-shadow: 0 1px 3px rgba(0,0,0,0.3); transition: 0.2s; }
+.dropdown-item input[type="checkbox"]:checked { background: #c9a96e; }
+.dropdown-item input[type="checkbox"]:checked::after { left: 21px; }
+
+
+
+/* Account modal */
+.profile-modal-overlay { background-color: rgba(15,23,42,0.65); backdrop-filter: blur(6px); }
+.profile-modal-card { max-width: 420px; border-radius: 22px; border: 1px solid #e7dcc6; background: #fffdf8; box-shadow: 0 30px 70px rgba(15,23,42,0.45); }
+.profile-modal-header { padding: 20px 24px; background: linear-gradient(135deg, #0f172a, #1e2a47); border-bottom: 2px solid #c9a96e; }
+.profile-modal-header h3 { font-family: 'Playfair Display', serif; font-size: 19px; font-weight: 600; letter-spacing: 0.5px; color: #ffffff; }
+.profile-close-btn { color: #cbd5e1; font-size: 28px; line-height: 1; }
+.profile-close-btn:hover { color: #c9a96e; }
+.profile-modal-body { padding: 26px 24px 8px; }
+.account-avatar-wrap { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-bottom: 22px; }
+.account-badge { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #b08d57; font-weight: 600; }
+.profile-info-group { background: #ffffff; border: 1px solid #ece4d3; border-radius: 12px; padding: 12px 16px; margin-bottom: 12px; }
+.profile-info-group label { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: #b08d57; font-weight: 600; margin-bottom: 2px; }
+.profile-info-group p { margin: 2px 0 0; font-size: 15px; font-weight: 600; color: #0f172a; word-break: break-all; }
+.profile-modal-footer { padding: 14px 24px 24px; background: transparent; border-top: none; gap: 10px; }
+.profile-btn-home { background: linear-gradient(135deg, #1e2a47, #0f172a); color: #ffffff; border: 1px solid #c9a96e; padding: 12px; border-radius: 12px; font-size: 13px; letter-spacing: 0.6px; }
+.profile-btn-delete { background: transparent; color: #b91c1c; border: 1px solid #fca5a5; padding: 12px; border-radius: 12px; font-size: 13px; letter-spacing: 0.6px; transition: 0.2s; }
+.profile-btn-delete:hover { background: #b91c1c; color: #ffffff; opacity: 1; }
+
+/* Dark mode */
+
+
+
+
+
+
+
+
+
+</style>
+<style>
+/* ---------- light defaults for classed elements ---------- */
+.date-input { width: 100%; padding: 12px; border: 1.5px solid var(--border); border-radius: 10px; outline: none; font-size: 14px; background: #fafafa; color: #0f172a; cursor: pointer; }
+.date-input:focus { border-color: #c9a96e; box-shadow: 0 0 0 3px rgba(201,169,110,0.2); }
+.fee-box { background: #f8fafc; padding: 16px; border-radius: 12px; border: 1px solid var(--border); margin-bottom: 16px; }
+.fee-row { display: flex; justify-content: space-between; font-size: 13px; }
+.fee-row.status { color: #166534; }
+.rates-body { font-size: 13px; color: #555; line-height: 1.6; }
+.rules-note { color: #9b2c2c; }
+
+/* =========================================
+   DARK MODE  (standard app-style, consistent)
+   ========================================= */
+body.dark-mode {
+    --bg-color: #121316;
+    --text-color: #e8eaed;
+    --surface: #1c1d21;
+    --surface-2: #26272c;
+    --border: #30323a;
+    --card-border: #30323a;
+    --muted: #9aa0a6;
+    --dark: #e8eaed;
+    --card: #1c1d21;
+    --input-bg: #26272c;
+    background-image: none !important;
+    color-scheme: dark;
+}
+
+/* Header */
+body.dark-mode header { background: #1a1b1f; border-bottom-color: #2a2c33; box-shadow: 0 2px 14px rgba(0,0,0,0.5); }
+body.dark-mode .logo { color: #f1f3f4; }
+
+/* Cards & text */
+body.dark-mode .section-card, body.dark-mode .card { background-color: var(--surface) !important; border-color: var(--border) !important; box-shadow: 0 8px 28px rgba(0,0,0,0.45); }
+body.dark-mode .section-title, body.dark-mode h1, body.dark-mode h2, body.dark-mode h3, body.dark-mode h4 { color: #f1f3f4; }
+body.dark-mode .rates-heading { color: #f1f3f4 !important; }
+body.dark-mode .rates-body { color: #c4c7cc; }
+body.dark-mode .rules-note { color: #f87171; }
+body.dark-mode .address-text { color: var(--muted); }
+body.dark-mode .address-text b { color: #e8eaed; }
+body.dark-mode .inclusions-list li { background: var(--surface-2); color: #e8eaed; border: 1px solid var(--border); }
+body.dark-mode .gallery-card { border-color: var(--border); box-shadow: 0 4px 14px rgba(0,0,0,0.4); }
+body.dark-mode .map-container iframe { filter: invert(0.9) hue-rotate(180deg) brightness(0.95) contrast(0.9); }
+
+/* Booking panel */
+body.dark-mode .date-input { background: var(--surface-2); color: #e8eaed; border-color: var(--border); }
+body.dark-mode .date-input::placeholder { color: var(--muted); }
+body.dark-mode .fee-box { background: var(--surface-2); border-color: var(--border); }
+body.dark-mode .fee-row.status { color: #4ade80; }
+body.dark-mode .btn-auth { background: #c9a96e; color: #0f172a; }
+body.dark-mode .btn-auth:hover { background: #b08d57; color: #ffffff; }
+
+/* Calendar (flatpickr) */
+body.dark-mode .flatpickr-calendar { background: var(--surface-2); border: 1px solid var(--border); box-shadow: 0 12px 30px rgba(0,0,0,0.6); }
+body.dark-mode .flatpickr-calendar.arrowTop:before, body.dark-mode .flatpickr-calendar.arrowTop:after { border-bottom-color: var(--surface-2); }
+body.dark-mode .flatpickr-months .flatpickr-month, body.dark-mode .flatpickr-current-month, body.dark-mode .flatpickr-weekdays,
+body.dark-mode span.flatpickr-weekday, body.dark-mode .flatpickr-current-month .flatpickr-monthDropdown-months { background: transparent; color: #e8eaed; fill: #e8eaed; }
+body.dark-mode .flatpickr-monthDropdown-months option { background: var(--surface-2); color: #e8eaed; }
+body.dark-mode .numInputWrapper input.cur-year, body.dark-mode .flatpickr-current-month input.cur-year { color: #e8eaed; background: transparent; }
+body.dark-mode .flatpickr-months .flatpickr-prev-month svg, body.dark-mode .flatpickr-months .flatpickr-next-month svg { fill: #e8eaed; }
+body.dark-mode .flatpickr-day { color: #e8eaed; }
+body.dark-mode .flatpickr-day:hover { background: #3a3c44; border-color: #3a3c44; }
+body.dark-mode .flatpickr-day.today { border-color: #c9a96e; }
+body.dark-mode .flatpickr-day.selected, body.dark-mode .flatpickr-day.startRange, body.dark-mode .flatpickr-day.endRange { background: #c9a96e; border-color: #c9a96e; color: #0f172a; }
+body.dark-mode .flatpickr-day.flatpickr-disabled, body.dark-mode .flatpickr-day.prevMonthDay, body.dark-mode .flatpickr-day.nextMonthDay { color: #6b6f76; }
+
+/* Profile menu */
+body.dark-mode .profile-trigger { background: var(--surface-2); border-color: var(--border); color: #e8eaed; }
+body.dark-mode .profile-dropdown-content { background: var(--surface); border-color: var(--border); box-shadow: 0 20px 50px rgba(0,0,0,0.6); }
+body.dark-mode .profile-dropdown-content a, body.dark-mode .profile-dropdown-content .dropdown-item, body.dark-mode .profile-dropdown-content button { color: #e8eaed; }
+body.dark-mode .profile-dropdown-content a:hover, body.dark-mode .profile-dropdown-content button:hover { background-color: var(--surface-2); color: #ffffff; }
+body.dark-mode .profile-dropdown-content hr { border-top-color: var(--border); }
+body.dark-mode .profile-dropdown-content button.dd-logout { color: #f87171; }
+body.dark-mode .profile-dropdown-content button.dd-logout:hover { background-color: rgba(248,113,113,0.12); color: #fca5a5; }
+body.dark-mode .dropdown-item input[type="checkbox"] { background-color: #4b4e55; border: none; }
+body.dark-mode .dropdown-item input[type="checkbox"]:checked { background-color: #c9a96e; }
+
+/* Account modal */
+body.dark-mode .profile-modal-card { background: var(--surface); border-color: var(--border); }
+body.dark-mode .profile-info-group { background: var(--surface-2); border-color: var(--border); }
+body.dark-mode .profile-info-group p { color: #f1f3f4; }
+body.dark-mode .profile-btn-delete { border-color: #7f1d1d; color: #f87171; }
+body.dark-mode .profile-btn-delete:hover { background: #b91c1c; color: #ffffff; }
+
+/* Chatbot */
+body.dark-mode .chat-window { background: var(--surface); border-color: var(--border); }
+body.dark-mode .chat-messages { background: #16171a; }
+body.dark-mode .chat-msg.bot { background: var(--surface-2); color: #e8eaed; border-color: var(--border); }
+body.dark-mode .chat-chips, body.dark-mode .chat-input-row { background: var(--surface); border-top-color: var(--border); }
+body.dark-mode .chat-chip { background: var(--surface-2); color: #e8eaed; border-color: #3a3c44; }
+body.dark-mode .chat-chip:hover { background: #c9a96e; color: #0f172a; border-color: #c9a96e; }
+body.dark-mode .chat-chip.agent { background: #c9a96e; color: #0f172a; border-color: #c9a96e; }
+body.dark-mode .chat-input-row input { background: var(--surface-2); color: #e8eaed; border-color: var(--border); }
+body.dark-mode .chat-input-row input::placeholder { color: var(--muted); }
+</style>
+<style>
+/* ---------- Refined, emoji-free Account modal & menu icons ---------- */
+.dd-ico { width: 17px; height: 17px; stroke: #b08d57; fill: none; stroke-width: 1.7; flex-shrink: 0; }
+.profile-dropdown-content button.dd-logout .dd-ico { stroke: #b91c1c; }
+body.dark-mode .profile-dropdown-content button.dd-logout .dd-ico { stroke: #f87171; }
+
+.profile-modal-footer { position: relative; margin: 8px 24px 0; padding: 22px 0 26px; border-top: 1px solid #efe7d6; gap: 12px; }
+.profile-modal-footer::before { content: ''; position: absolute; top: -1px; left: 50%; transform: translateX(-50%); width: 56px; height: 1px; background: #c9a96e; }
+body.dark-mode .profile-modal-footer { border-top-color: var(--border); }
+
+.profile-btn-home, .profile-btn-delete { display: block; width: 100%; text-align: center; padding: 14px 16px; border-radius: 10px; font-family: 'Montserrat', sans-serif; font-size: 11.5px; font-weight: 600; letter-spacing: 2.5px; text-transform: uppercase; transition: 0.25s; }
+.profile-btn-home { background: linear-gradient(135deg, #1e2a47, #0f172a); color: #ffffff; border: 1px solid #c9a96e; }
+.profile-btn-home:hover { background: #c9a96e; color: #0f172a; opacity: 1; }
+.profile-btn-delete { background: transparent; color: #9b2c2c; border: 1px solid #e4c6c6; }
+.profile-btn-delete:hover { background: #9b2c2c; color: #ffffff; border-color: #9b2c2c; }
+body.dark-mode .profile-btn-home:hover { background: #c9a96e; color: #0f172a; }
+body.dark-mode .profile-btn-delete { color: #f08a8a; border-color: #4a2a2a; }
+body.dark-mode .profile-btn-delete:hover { background: #b91c1c; color: #ffffff; border-color: #b91c1c; }
+
+.account-badge { letter-spacing: 4px; }
+.profile-info-group { padding: 13px 18px; }
+.profile-info-group label { font-size: 9.5px; letter-spacing: 2.5px; }
+.profile-info-group p { font-size: 15px; letter-spacing: 0.2px; }
+</style>
+</body>
+</html>
